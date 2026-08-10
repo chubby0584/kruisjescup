@@ -457,6 +457,7 @@
       <h2>🏆 Stand</h2>
       <ul class="standings" id="standingsList"></ul>
       <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
+      <button class="btn-secondary" id="standingsToggleBtn" style="width:100%;margin-top:12px;display:none;"></button>
     </div>
 
     <div class="card">
@@ -699,6 +700,7 @@ import { firebaseConfig } from "./firebase-config.js";
   }
   seasonSelect.addEventListener("change", ()=>{
     activeSeason = seasonSelect.value;
+    standingsExpanded = false;
     renderSeasonSelect();
     renderStandings();
     renderHistory();
@@ -719,6 +721,14 @@ import { firebaseConfig } from "./firebase-config.js";
     return counts;
   }
 
+  const STANDINGS_TOP_N = 4;
+  let standingsExpanded = false;
+  const standingsToggleBtn = document.getElementById("standingsToggleBtn");
+  standingsToggleBtn.addEventListener("click", ()=>{
+    standingsExpanded = !standingsExpanded;
+    renderStandings();
+  });
+
   function renderStandings(){
     const counts = seasonCounts(activeSeason);
     const rows = data.players
@@ -726,15 +736,25 @@ import { firebaseConfig } from "./firebase-config.js";
       .filter(r => r.count > 0)
       .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
 
+    const showAll = standingsExpanded || rows.length <= STANDINGS_TOP_N;
+    const visibleRows = showAll ? rows : rows.slice(0, STANDINGS_TOP_N);
+
     const list = document.getElementById("standingsList");
     list.innerHTML = "";
     document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
-    rows.forEach((r,i)=>{
+    visibleRows.forEach((r,i)=>{
       const li = document.createElement("li");
       const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
       li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+r.name+'</span><span class="score">'+r.count+'</span>';
       list.appendChild(li);
     });
+
+    if(rows.length > STANDINGS_TOP_N){
+      standingsToggleBtn.style.display = "block";
+      standingsToggleBtn.textContent = standingsExpanded ? "Toon minder" : "Bekijk hele lijst (" + rows.length + ")";
+    } else {
+      standingsToggleBtn.style.display = "none";
+    }
   }
 
   // ---------- Week calendar ----------
