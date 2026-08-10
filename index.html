@@ -64,6 +64,14 @@
     font-size:.85rem;
   }
   header select option{color:#000;}
+  header .sync-row{
+    margin-top:4px;
+    font-size:.72rem;
+    opacity:.85;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
   main{
     max-width:640px;
     margin:0 auto;
@@ -416,6 +424,7 @@
     <span id="seasonLabel">Seizoen</span>
     <select id="seasonSelect"></select>
   </div>
+  <div class="sync-row" id="syncRow">verbinden met cloud…</div>
 </header>
 
 <main>
@@ -491,11 +500,11 @@
   <section id="tab-instellingen" class="tabpage">
     <div class="card">
       <h2>Back-up</h2>
-      <p class="hint">Alle data (spelers, kruisjes, foto's) staat lokaal in deze browser op dit toestel. Maak regelmatig een export als back-up, of om over te zetten naar een ander toestel.</p>
+      <p class="hint">Alle data (spelers, kruisjes, foto's) staat in de cloud (Firebase) en wordt automatisch gesynchroniseerd — ook zonder bereik op het veld; hij synct zodra je weer verbinding hebt. Een export hieronder is een extra, handmatige kopie voor de zekerheid.</p>
       <button class="btn-secondary" id="exportBtn" style="width:100%;margin-top:12px;">⬇️ Exporteer back-up (JSON)</button>
       <label for="importInput" style="margin-top:16px;">Importeer back-up</label>
       <input type="file" id="importInput" accept="application/json">
-      <p class="hint">Let op: importeren vervangt alle huidige data op dit toestel.</p>
+      <p class="hint">Let op: importeren vervangt alle huidige cloud-data.</p>
     </div>
     <div class="card">
       <h2>Gevarenzone</h2>
@@ -514,10 +523,17 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  initializeFirestore, persistentLocalCache,
+  collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
 (function(){
   "use strict";
-  const STORAGE_KEY = "kruisjescup-data-v1";
   const DOW = ["Ma","Di","Wo","Do","Vr","Za","Zo"];
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -542,22 +558,44 @@
     return date;
   }
 
-  function loadData(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw){
-        const parsed = JSON.parse(raw);
-        if(parsed && Array.isArray(parsed.players) && Array.isArray(parsed.entries)) return parsed;
-      }
-    }catch(e){ console.error("Kon data niet laden", e); }
-    return { players: [], entries: [] };
+  // ---------- Firebase (cloud sync) ----------
+  let data = { players: [], entries: [] };
+  const syncRow = document.getElementById("syncRow");
+
+  function setSyncStatus(text){
+    if(syncRow) syncRow.textContent = text;
+  }
+  function updateSyncStatus(snap){
+    setSyncStatus(snap.metadata.fromCache ? "📴 offline — wordt gesynchroniseerd zodra je weer online bent" : "☁️ gesynchroniseerd");
   }
 
-  function saveData(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
+  let db = null;
+
+  if(!configFilledIn){
+    setSyncStatus("⚠️ cloud niet ingesteld — zie README.md");
+  } else {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
+
+    onSnapshot(collection(db,"players"), snap=>{
+      data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      updateSyncStatus(snap);
+      renderAllPlayers();
+    }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+
+    onSnapshot(collection(db,"entries"), snap=>{
+      data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+      updateSyncStatus(snap);
+      renderAllEntries();
+    }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+
+    signInAnonymously(auth).catch(err=>{
+      setSyncStatus("⚠️ kon niet inloggen: " + err.message);
+    });
   }
 
-  let data = loadData();
   let selectedWinners = new Set();
   let currentPhotoData = null;
   let currentWeekStart = startOfWeek(new Date());
@@ -795,26 +833,26 @@
   });
 
   // ---------- Save (upsert) entry for selected day ----------
-  document.getElementById("saveBtn").addEventListener("click", ()=>{
-    if(!selectedDate) return;
+  document.getElementById("saveBtn").addEventListener("click", async ()=>{
+    if(!selectedDate || !db) return;
     const iso = selectedDate;
-    data.entries = data.entries.filter(e=>e.date !== iso);
-    if(selectedWinners.size > 0){
-      data.entries.push({
-        id: uid(),
-        date: iso,
-        season: seasonForDate(iso),
-        playerIds: Array.from(selectedWinners),
-        note: document.getElementById("note").value.trim(),
-        photo: currentPhotoData
-      });
+    const hasWinners = selectedWinners.size > 0;
+    try{
+      if(hasWinners){
+        await setDoc(doc(db,"entries",iso), {
+          season: seasonForDate(iso),
+          playerIds: Array.from(selectedWinners),
+          note: document.getElementById("note").value.trim(),
+          photo: currentPhotoData || null
+        });
+      } else {
+        await deleteDoc(doc(db,"entries",iso));
+      }
+      closePanel();
+      toast(hasWinners ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd");
+    }catch(err){
+      toast("Opslaan mislukt: " + err.message);
     }
-    saveData();
-    renderSeasonSelect();
-    renderStandings();
-    renderHistory();
-    closePanel();
-    toast(selectedWinners.size > 0 ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd");
   });
 
   // ---------- History ----------
@@ -835,18 +873,19 @@
         '<div class="winners">🎯 '+winners+'</div>' +
         (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
         (e.photo ? '<img src="'+e.photo+'">' : '') +
-        '<div class="actions"><button class="btn-secondary btn-small" data-del="'+e.id+'">Verwijderen</button></div>';
+        '<div class="actions"><button class="btn-secondary btn-small" data-del="'+e.date+'">Verwijderen</button></div>';
       container.appendChild(div);
     });
     container.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
+      btn.addEventListener("click", async ()=>{
+        if(!db) return;
         if(confirm("Dit kruisje verwijderen?")){
-          data.entries = data.entries.filter(e=>e.id !== btn.dataset.del);
-          saveData();
-          renderHistory();
-          renderStandings();
-          renderWeek();
-          toast("Verwijderd");
+          try{
+            await deleteDoc(doc(db,"entries",btn.dataset.del));
+            toast("Verwijderd");
+          }catch(err){
+            toast("Verwijderen mislukt: " + err.message);
+          }
         }
       });
     });
@@ -881,35 +920,31 @@
       container.appendChild(row);
     });
     container.querySelectorAll("input[data-id]").forEach(inp=>{
-      inp.addEventListener("change", ()=>{
-        const p = data.players.find(p=>p.id===inp.dataset.id);
-        if(p && inp.value.trim()){
-          p.name = inp.value.trim();
-          saveData();
-          renderPickGrid();
-          renderStandings();
-          renderHistory();
-          renderWeek();
+      inp.addEventListener("change", async ()=>{
+        if(!db || !inp.value.trim()) return;
+        try{
+          await setDoc(doc(db,"players",inp.dataset.id), { name: inp.value.trim() }, { merge:true });
+        }catch(err){
+          toast("Opslaan mislukt: " + err.message);
         }
       });
     });
     container.querySelectorAll("[data-remove]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
+      btn.addEventListener("click", async ()=>{
+        if(!db) return;
         const p = data.players.find(p=>p.id===btn.dataset.remove);
         const usedInEntries = data.entries.some(e=>e.playerIds.includes(btn.dataset.remove));
         const msg = usedInEntries
           ? 'Deze speler heeft al kruisjes. Verwijderen laat de historie staan als "(verwijderde speler)". Doorgaan?'
           : "Speler " + (p ? p.name : "") + " verwijderen?";
         if(confirm(msg)){
-          data.players = data.players.filter(p=>p.id !== btn.dataset.remove);
-          selectedWinners.delete(btn.dataset.remove);
-          saveData();
-          renderRoster();
-          renderPickGrid();
-          renderStandings();
-          renderHistory();
-          renderWeek();
-          toast("Speler verwijderd");
+          try{
+            await deleteDoc(doc(db,"players",btn.dataset.remove));
+            selectedWinners.delete(btn.dataset.remove);
+            toast("Speler verwijderd");
+          }catch(err){
+            toast("Verwijderen mislukt: " + err.message);
+          }
         }
       });
     });
@@ -919,16 +954,18 @@
   document.getElementById("newPlayerName").addEventListener("keydown", (e)=>{
     if(e.key === "Enter") addPlayer();
   });
-  function addPlayer(){
+  async function addPlayer(){
+    if(!db) return;
     const input = document.getElementById("newPlayerName");
     const name = input.value.trim();
     if(!name) return;
-    data.players.push({ id: uid(), name: name });
-    saveData();
-    input.value = "";
-    renderRoster();
-    renderPickGrid();
-    toast("Speler toegevoegd");
+    try{
+      await setDoc(doc(db,"players",uid()), { name });
+      input.value = "";
+      toast("Speler toegevoegd");
+    }catch(err){
+      toast("Toevoegen mislukt: " + err.message);
+    }
   }
 
   // ---------- Export / Import ----------
@@ -945,57 +982,96 @@
     toast("Back-up gedownload");
   });
 
+  async function wipeCollection(name){
+    const snap = await getDocs(collection(db,name));
+    const docs = snap.docs;
+    for(let i=0;i<docs.length;i+=450){
+      const batch = writeBatch(db);
+      docs.slice(i,i+450).forEach(d=>batch.delete(d.ref));
+      await batch.commit();
+    }
+  }
+
   document.getElementById("importInput").addEventListener("change", ()=>{
     const file = document.getElementById("importInput").files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = (e)=>{
+    reader.onload = async (e)=>{
       try{
         const parsed = JSON.parse(e.target.result);
         if(!parsed || !Array.isArray(parsed.players) || !Array.isArray(parsed.entries)){
           throw new Error("Ongeldig bestand");
         }
-        if(confirm("Dit vervangt alle huidige data op dit toestel. Doorgaan?")){
-          data = parsed;
-          saveData();
-          activeSeason = seasonForDate(toIso(new Date()));
-          if(!allSeasons().includes(activeSeason) && data.entries.length){
-            activeSeason = data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].season;
+        if(!db){ throw new Error("Cloud niet ingesteld"); }
+        if(confirm("Dit vervangt alle huidige cloud-data. Doorgaan?")){
+          await wipeCollection("players");
+          await wipeCollection("entries");
+          for(let i=0;i<parsed.players.length;i+=450){
+            const batch = writeBatch(db);
+            parsed.players.slice(i,i+450).forEach(p=>{
+              batch.set(doc(db,"players", p.id || uid()), { name: p.name });
+            });
+            await batch.commit();
+          }
+          for(let i=0;i<parsed.entries.length;i+=450){
+            const batch = writeBatch(db);
+            parsed.entries.slice(i,i+450).forEach(en=>{
+              batch.set(doc(db,"entries", en.date), {
+                season: en.season || seasonForDate(en.date),
+                playerIds: en.playerIds || [],
+                note: en.note || "",
+                photo: en.photo || null
+              });
+            });
+            await batch.commit();
           }
           closePanel();
-          renderAll();
           toast("Back-up geïmporteerd");
         }
       }catch(err){
-        alert("Kon bestand niet lezen: " + err.message);
+        alert("Kon bestand niet importeren: " + err.message);
       }
       document.getElementById("importInput").value = "";
     };
     reader.readAsText(file);
   });
 
-  document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.getElementById("resetBtn").addEventListener("click", async ()=>{
+    if(!db) return;
     if(confirm("Weet je zeker dat je ALLE spelers en kruisjes wilt wissen? Dit kan niet ongedaan gemaakt worden.")){
       if(confirm("Echt zeker? Maak liever eerst een back-up (export).")){
-        data = { players: [], entries: [] };
-        saveData();
-        activeSeason = seasonForDate(toIso(new Date()));
-        closePanel();
-        renderAll();
-        toast("Alles gewist");
+        try{
+          await wipeCollection("players");
+          await wipeCollection("entries");
+          closePanel();
+          toast("Alles gewist");
+        }catch(err){
+          toast("Wissen mislukt: " + err.message);
+        }
       }
     }
   });
 
-  function renderAll(){
+  // ---------- Render triggers ----------
+  function renderAllPlayers(){
+    renderPickGrid();
+    renderStandings();
+    renderRoster();
+    renderWeek();
+  }
+  function renderAllEntries(){
     renderSeasonSelect();
     renderStandings();
     renderWeek();
     renderHistory();
-    renderRoster();
+    renderPickGrid();
   }
 
-  renderAll();
+  renderSeasonSelect();
+  renderStandings();
+  renderWeek();
+  renderHistory();
+  renderRoster();
 })();
 </script>
 </body>
