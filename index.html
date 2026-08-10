@@ -570,8 +570,18 @@ import { firebaseConfig } from "./firebase-config.js";
   function setSyncStatus(text){
     if(syncRow) syncRow.textContent = text;
   }
+  function setSyncError(prefix, err){
+    setSyncStatus("⚠️ " + prefix + ": " + (err && err.code ? err.code + " — " : "") + (err ? err.message : "onbekende fout") + " (tik om te verversen)");
+  }
   function updateSyncStatus(snap){
     setSyncStatus(snap.metadata.fromCache ? "📴 offline — wordt gesynchroniseerd zodra je weer online bent" : "☁️ gesynchroniseerd");
+  }
+  // Tik op de statusregel om de pagina met een schone cache te herladen.
+  if(syncRow){
+    syncRow.style.cursor = "pointer";
+    syncRow.addEventListener("click", ()=>{
+      location.href = location.pathname + "?nocache=" + Date.now();
+    });
   }
 
   const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
@@ -584,6 +594,12 @@ import { firebaseConfig } from "./firebase-config.js";
     const auth = getAuth(app);
     db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
 
+    // Als inloggen te lang duurt (bijv. vastgelopen opslag in een homescreen-app),
+    // laat dat expliciet zien in plaats van stil te blijven hangen op "verbinden…".
+    const stuckTimer = setTimeout(()=>{
+      setSyncStatus("⚠️ inloggen duurt lang — tik om te verversen");
+    }, 8000);
+
     // Wacht op een bevestigde login voordat we data ophalen: als de listeners
     // starten vóór het inloggen klaar is (bijv. bij een "koude" start vanaf
     // het beginscherm, zonder eerder opgeslagen sessie), wijst Firestore het
@@ -591,6 +607,7 @@ import { firebaseConfig } from "./firebase-config.js";
     // niet vanzelf zodra je alsnog bent ingelogd.
     let subscribed = false;
     onAuthStateChanged(auth, user=>{
+      clearTimeout(stuckTimer);
       if(user && !subscribed){
         subscribed = true;
 
@@ -598,20 +615,21 @@ import { firebaseConfig } from "./firebase-config.js";
           data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
           updateSyncStatus(snap);
           renderAllPlayers();
-        }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+        }, err=>{ setSyncError("cloudfout", err); });
 
         onSnapshot(collection(db,"entries"), snap=>{
           data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
           updateSyncStatus(snap);
           renderAllEntries();
-        }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+        }, err=>{ setSyncError("cloudfout", err); });
       } else if(!user){
         setSyncStatus("verbinden met cloud…");
       }
     });
 
     signInAnonymously(auth).catch(err=>{
-      setSyncStatus("⚠️ kon niet inloggen: " + err.message);
+      clearTimeout(stuckTimer);
+      setSyncError("kon niet inloggen", err);
     });
   }
 
