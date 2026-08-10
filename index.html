@@ -91,6 +91,144 @@
     color:var(--text);
   }
   textarea{resize:vertical;min-height:44px;}
+
+  /* ---------- Standings ---------- */
+  .standings{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .standings li{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px;
+    border-bottom:1px solid var(--border);
+  }
+  .standings li:last-child{border-bottom:none;}
+  .standings .rank{
+    width:26px;
+    font-weight:700;
+    color:var(--muted);
+  }
+  .standings li:first-child .rank{color:var(--gold);}
+  .standings .name{flex:1;font-weight:600;}
+  .standings .score{
+    font-weight:700;
+    color:var(--green);
+    background:#e6f2e7;
+    border-radius:12px;
+    padding:2px 10px;
+    font-size:.9rem;
+  }
+
+  /* ---------- Week calendar ---------- */
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .week-nav .week-label{
+    font-weight:700;
+    font-size:.95rem;
+    color:var(--text);
+    text-align:center;
+    flex:1;
+  }
+  .week-nav .week-range{
+    display:block;
+    font-weight:400;
+    font-size:.75rem;
+    color:var(--muted);
+  }
+  .week-nav button{
+    background:#eceeec;
+    border:none;
+    border-radius:8px;
+    width:36px;
+    height:36px;
+    font-size:1.1rem;
+    line-height:1;
+    color:var(--text);
+  }
+  .today-btn-row{text-align:center;margin-bottom:12px;}
+  .today-btn-row button{
+    background:none;
+    color:var(--green);
+    font-size:.8rem;
+    font-weight:600;
+    padding:4px 10px;
+    text-decoration:underline;
+  }
+  .week-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .day-cell{
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:8px 2px;
+    text-align:center;
+    cursor:pointer;
+    background:#fafafa;
+    user-select:none;
+    transition:.15s;
+    position:relative;
+    min-height:64px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+  }
+  .day-cell .dow{
+    font-size:.68rem;
+    color:var(--muted);
+    font-weight:600;
+    text-transform:uppercase;
+  }
+  .day-cell .dom{
+    font-size:1.05rem;
+    font-weight:700;
+  }
+  .day-cell.today{border-color:var(--green-light);}
+  .day-cell.today .dom{color:var(--green-light);}
+  .day-cell.has-entry{
+    background:#e6f2e7;
+    border-color:var(--green);
+  }
+  .day-cell.selected{
+    border-color:var(--gold);
+    box-shadow:0 0 0 2px rgba(201,162,39,.35);
+  }
+  .day-cell .mark{
+    font-size:.7rem;
+    color:var(--green);
+    font-weight:700;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* ---------- Assignment panel ---------- */
+  .assign-panel{
+    border-top:2px dashed var(--border);
+    margin-top:16px;
+    padding-top:16px;
+  }
+  .assign-panel h3{
+    margin:0 0 4px;
+    font-size:1rem;
+    color:var(--green);
+  }
+  .assign-panel .sub{
+    font-size:.8rem;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
   .player-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
@@ -129,6 +267,13 @@
     display:none;
     border:1px solid var(--border);
   }
+  .panel-actions{
+    display:flex;
+    gap:8px;
+    margin-top:16px;
+  }
+  .panel-actions button{flex:1;}
+
   button{
     font-family:inherit;
     cursor:pointer;
@@ -141,10 +286,7 @@
   .btn-primary{
     background:var(--green);
     color:#fff;
-    width:100%;
-    margin-top:16px;
   }
-  .btn-primary:disabled{background:#a5b8a6;cursor:not-allowed;}
   .btn-secondary{
     background:#eceeec;
     color:var(--text);
@@ -156,39 +298,6 @@
   .btn-small{
     padding:6px 10px;
     font-size:.8rem;
-  }
-  .file-row{
-    display:flex;
-    gap:8px;
-    margin-top:8px;
-  }
-  .standings{
-    list-style:none;
-    margin:0;
-    padding:0;
-  }
-  .standings li{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:10px 4px;
-    border-bottom:1px solid var(--border);
-  }
-  .standings li:last-child{border-bottom:none;}
-  .standings .rank{
-    width:26px;
-    font-weight:700;
-    color:var(--muted);
-  }
-  .standings li:first-child .rank{color:var(--gold);}
-  .standings .name{flex:1;font-weight:600;}
-  .standings .score{
-    font-weight:700;
-    color:var(--green);
-    background:#e6f2e7;
-    border-radius:12px;
-    padding:2px 10px;
-    font-size:.9rem;
   }
   .empty{
     color:var(--muted);
@@ -206,7 +315,7 @@
     justify-content:space-between;
     align-items:baseline;
   }
-  .history-item .date{font-weight:700;color:var(--green);}
+  .history-item .date{font-weight:700;color:var(--green);cursor:pointer;}
   .history-item .winners{margin-top:4px;font-size:.95rem;}
   .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
   .history-item img{
@@ -304,38 +413,49 @@
 
 <main>
 
-  <!-- TOEKENNEN -->
-  <section id="tab-toekennen" class="tabpage active">
-    <div class="card">
-      <h2>Kruisje toekennen</h2>
-      <label for="matchDate">Datum eindpartij</label>
-      <input type="date" id="matchDate">
+  <!-- HOME: stand + week kalender -->
+  <section id="tab-home" class="tabpage active">
 
-      <label>Winnaar(s) <span class="hint">(tik er meerdere aan bij een gelijkspel)</span></label>
-      <div class="player-grid" id="pickGrid"></div>
-      <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
-
-      <label for="note">Notitie (optioneel)</label>
-      <textarea id="note" placeholder="bijv. penalty's, 3-2"></textarea>
-
-      <label>Foto (optioneel)</label>
-      <div class="file-row">
-        <input type="file" id="photoInput" accept="image/*" capture="environment">
-      </div>
-      <img id="photoPreview" class="photo-preview">
-
-      <button class="btn-primary" id="saveBtn" disabled>Kruisje opslaan</button>
-    </div>
-  </section>
-
-  <!-- STAND -->
-  <section id="tab-stand" class="tabpage">
     <div class="card">
       <span class="season-badge" id="standSeasonBadge"></span>
-      <h2>Stand</h2>
+      <h2>🏆 Stand</h2>
       <ul class="standings" id="standingsList"></ul>
       <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
     </div>
+
+    <div class="card">
+      <h2>Week</h2>
+      <div class="week-nav">
+        <button id="prevWeekBtn" aria-label="Vorige week">‹</button>
+        <span class="week-label" id="weekLabel"></span>
+        <button id="nextWeekBtn" aria-label="Volgende week">›</button>
+      </div>
+      <div class="today-btn-row">
+        <button id="todayBtn">Naar huidige week</button>
+      </div>
+      <div class="week-grid" id="weekGrid"></div>
+
+      <div class="assign-panel" id="assignPanel" style="display:none;">
+        <h3 id="assignDateTitle"></h3>
+        <p class="sub">Tik de speler(s) aan die de eindpartij die dag hebben gewonnen.</p>
+
+        <div class="player-grid" id="pickGrid"></div>
+        <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
+
+        <label for="note">Notitie (optioneel)</label>
+        <textarea id="note" placeholder="bijv. penalty's, 3-2"></textarea>
+
+        <label>Foto (optioneel)</label>
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+        <img id="photoPreview" class="photo-preview">
+
+        <div class="panel-actions">
+          <button class="btn-secondary" id="closePanelBtn">Sluiten</button>
+          <button class="btn-primary" id="saveBtn">Opslaan</button>
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <!-- GESCHIEDENIS -->
@@ -379,8 +499,7 @@
 </main>
 
 <nav class="tabs">
-  <button data-tab="toekennen" class="active"><span class="icon">✔️</span>Toekennen</button>
-  <button data-tab="stand"><span class="icon">🏆</span>Stand</button>
+  <button data-tab="home" class="active"><span class="icon">🏠</span>Home</button>
   <button data-tab="geschiedenis"><span class="icon">📖</span>Geschiedenis</button>
   <button data-tab="spelers"><span class="icon">👥</span>Spelers</button>
   <button data-tab="instellingen"><span class="icon">⚙️</span>Meer</button>
@@ -392,14 +511,28 @@
 (function(){
   "use strict";
   const STORAGE_KEY = "kruisjescup-data-v1";
+  const DOW = ["Ma","Di","Wo","Do","Vr","Za","Zo"];
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
-  function seasonForDate(d){
-    const date = new Date(d);
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function toIso(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
+  function fromIso(s){ return new Date(s + "T00:00:00"); }
+
+  function seasonForDate(iso){
+    const date = fromIso(iso);
     const y = date.getFullYear();
     const m = date.getMonth(); // 0-11, August = 7
     return m >= 6 ? (y + "/" + (y+1)) : ((y-1) + "/" + y);
+  }
+
+  function startOfWeek(d){
+    const date = new Date(d);
+    date.setHours(0,0,0,0);
+    const day = date.getDay(); // 0=Sun..6=Sat
+    const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
+    date.setDate(date.getDate() + diff);
+    return date;
   }
 
   function loadData(){
@@ -420,6 +553,8 @@
   let data = loadData();
   let selectedWinners = new Set();
   let currentPhotoData = null;
+  let currentWeekStart = startOfWeek(new Date());
+  let selectedDate = null; // iso string of day currently open in assign panel
 
   // ---------- Toast ----------
   let toastTimer = null;
@@ -438,7 +573,6 @@
       document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
-      if(btn.dataset.tab === "stand") renderStandings();
       if(btn.dataset.tab === "geschiedenis") renderHistory();
       if(btn.dataset.tab === "spelers") renderRoster();
     });
@@ -446,7 +580,7 @@
 
   // ---------- Season selector ----------
   const seasonSelect = document.getElementById("seasonSelect");
-  let activeSeason = seasonForDate(new Date());
+  let activeSeason = seasonForDate(toIso(new Date()));
 
   function allSeasons(){
     const set = new Set(data.entries.map(e=>e.season));
@@ -474,107 +608,18 @@
     renderPickGrid();
   });
 
-  // ---------- Date default ----------
-  const matchDateInput = document.getElementById("matchDate");
-  function todayStr(){
-    const d = new Date();
-    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  // ---------- Standings ----------
+  function playerName(id){
+    const p = data.players.find(p=>p.id===id);
+    return p ? p.name : "(verwijderde speler)";
   }
-  matchDateInput.value = todayStr();
 
-  // ---------- Player pick grid (Toekennen tab) ----------
-  const pickGrid = document.getElementById("pickGrid");
   function seasonCounts(season){
     const counts = {};
     data.entries.filter(e=>e.season===season).forEach(e=>{
       e.playerIds.forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
     });
     return counts;
-  }
-
-  function renderPickGrid(){
-    pickGrid.innerHTML = "";
-    document.getElementById("noPlayersHint").style.display = data.players.length ? "none" : "block";
-    const counts = seasonCounts(activeSeason);
-    data.players.forEach(p=>{
-      const chip = document.createElement("div");
-      chip.className = "player-chip" + (selectedWinners.has(p.id) ? " selected" : "");
-      chip.innerHTML = p.name + '<span class="cnt">' + (counts[p.id]||0) + ' kruisjes</span>';
-      chip.addEventListener("click", ()=>{
-        if(selectedWinners.has(p.id)) selectedWinners.delete(p.id);
-        else selectedWinners.add(p.id);
-        renderPickGrid();
-        updateSaveBtn();
-      });
-      pickGrid.appendChild(chip);
-    });
-  }
-
-  function updateSaveBtn(){
-    document.getElementById("saveBtn").disabled = selectedWinners.size === 0;
-  }
-
-  // ---------- Photo handling ----------
-  const photoInput = document.getElementById("photoInput");
-  const photoPreview = document.getElementById("photoPreview");
-  photoInput.addEventListener("change", ()=>{
-    const file = photoInput.files[0];
-    if(!file){ currentPhotoData = null; photoPreview.style.display = "none"; return; }
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = (e)=>{
-      img.onload = ()=>{
-        const maxW = 900;
-        const scale = Math.min(1, maxW / img.width);
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        currentPhotoData = canvas.toDataURL("image/jpeg", 0.7);
-        photoPreview.src = currentPhotoData;
-        photoPreview.style.display = "block";
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // ---------- Save entry ----------
-  document.getElementById("saveBtn").addEventListener("click", ()=>{
-    if(selectedWinners.size === 0) return;
-    const dateVal = matchDateInput.value || todayStr();
-    const entry = {
-      id: uid(),
-      date: dateVal,
-      season: seasonForDate(dateVal),
-      playerIds: Array.from(selectedWinners),
-      note: document.getElementById("note").value.trim(),
-      photo: currentPhotoData
-    };
-    data.entries.push(entry);
-    saveData();
-
-    selectedWinners.clear();
-    currentPhotoData = null;
-    photoInput.value = "";
-    photoPreview.style.display = "none";
-    document.getElementById("note").value = "";
-    matchDateInput.value = todayStr();
-    updateSaveBtn();
-
-    if(entry.season !== activeSeason && !allSeasons().includes(activeSeason)){
-      activeSeason = entry.season;
-    }
-    renderSeasonSelect();
-    renderPickGrid();
-    toast("Kruisje opgeslagen ✔️");
-  });
-
-  // ---------- Standings ----------
-  function playerName(id){
-    const p = data.players.find(p=>p.id===id);
-    return p ? p.name : "(verwijderde speler)";
   }
 
   function renderStandings(){
@@ -595,6 +640,176 @@
     });
   }
 
+  // ---------- Week calendar ----------
+  const weekGrid = document.getElementById("weekGrid");
+  const weekLabel = document.getElementById("weekLabel");
+
+  function entryForDate(iso){
+    return data.entries.find(e=>e.date===iso) || null;
+  }
+
+  function weekNumber(d){
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function renderWeek(){
+    const days = [];
+    for(let i=0;i<7;i++){
+      const d = new Date(currentWeekStart);
+      d.setDate(d.getDate()+i);
+      days.push(d);
+    }
+    const last = days[6];
+    const fmt = (d)=> d.getDate() + " " + d.toLocaleDateString("nl-NL",{month:"short"});
+    weekLabel.innerHTML = "Week " + weekNumber(currentWeekStart) +
+      '<span class="week-range">' + fmt(currentWeekStart) + " – " + fmt(last) + " " + last.getFullYear() + "</span>";
+
+    const todayIso = toIso(new Date());
+    weekGrid.innerHTML = "";
+    days.forEach((d,i)=>{
+      const iso = toIso(d);
+      const entry = entryForDate(iso);
+      const cell = document.createElement("div");
+      let cls = "day-cell";
+      if(iso === todayIso) cls += " today";
+      if(entry) cls += " has-entry";
+      if(iso === selectedDate) cls += " selected";
+      cell.className = cls;
+      let markHtml = "";
+      if(entry){
+        const names = entry.playerIds.map(playerName).join(", ");
+        markHtml = '<span class="mark">✓ ' + names + '</span>';
+      }
+      cell.innerHTML =
+        '<span class="dow">'+DOW[i]+'</span>' +
+        '<span class="dom">'+d.getDate()+'</span>' +
+        markHtml;
+      cell.addEventListener("click", ()=> openDay(iso));
+      weekGrid.appendChild(cell);
+    });
+  }
+
+  document.getElementById("prevWeekBtn").addEventListener("click", ()=>{
+    currentWeekStart.setDate(currentWeekStart.getDate()-7);
+    renderWeek();
+  });
+  document.getElementById("nextWeekBtn").addEventListener("click", ()=>{
+    currentWeekStart.setDate(currentWeekStart.getDate()+7);
+    renderWeek();
+  });
+  document.getElementById("todayBtn").addEventListener("click", ()=>{
+    currentWeekStart = startOfWeek(new Date());
+    renderWeek();
+  });
+
+  // ---------- Assignment panel ----------
+  const assignPanel = document.getElementById("assignPanel");
+  const pickGrid = document.getElementById("pickGrid");
+
+  function openDay(iso){
+    if(selectedDate === iso){
+      closePanel();
+      return;
+    }
+    selectedDate = iso;
+    const entry = entryForDate(iso);
+    selectedWinners = new Set(entry ? entry.playerIds : []);
+    currentPhotoData = entry ? entry.photo : null;
+    document.getElementById("note").value = entry ? (entry.note||"") : "";
+    const preview = document.getElementById("photoPreview");
+    if(currentPhotoData){ preview.src = currentPhotoData; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("photoInput").value = "";
+
+    const d = fromIso(iso);
+    document.getElementById("assignDateTitle").textContent =
+      d.toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+
+    assignPanel.style.display = "block";
+    renderPickGrid();
+    renderWeek();
+    assignPanel.scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+
+  function closePanel(){
+    selectedDate = null;
+    assignPanel.style.display = "none";
+    selectedWinners = new Set();
+    currentPhotoData = null;
+    renderWeek();
+  }
+  document.getElementById("closePanelBtn").addEventListener("click", closePanel);
+
+  function renderPickGrid(){
+    pickGrid.innerHTML = "";
+    document.getElementById("noPlayersHint").style.display = data.players.length ? "none" : "block";
+    const counts = seasonCounts(activeSeason);
+    data.players.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+      const chip = document.createElement("div");
+      chip.className = "player-chip" + (selectedWinners.has(p.id) ? " selected" : "");
+      chip.innerHTML = p.name + '<span class="cnt">' + (counts[p.id]||0) + ' kruisjes</span>';
+      chip.addEventListener("click", ()=>{
+        if(selectedWinners.has(p.id)) selectedWinners.delete(p.id);
+        else selectedWinners.add(p.id);
+        renderPickGrid();
+      });
+      pickGrid.appendChild(chip);
+    });
+  }
+
+  // ---------- Photo handling ----------
+  const photoInput = document.getElementById("photoInput");
+  const photoPreview = document.getElementById("photoPreview");
+  photoInput.addEventListener("change", ()=>{
+    const file = photoInput.files[0];
+    if(!file){ return; }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      img.onload = ()=>{
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        currentPhotoData = canvas.toDataURL("image/jpeg", 0.7);
+        photoPreview.src = currentPhotoData;
+        photoPreview.style.display = "block";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- Save (upsert) entry for selected day ----------
+  document.getElementById("saveBtn").addEventListener("click", ()=>{
+    if(!selectedDate) return;
+    const iso = selectedDate;
+    data.entries = data.entries.filter(e=>e.date !== iso);
+    if(selectedWinners.size > 0){
+      data.entries.push({
+        id: uid(),
+        date: iso,
+        season: seasonForDate(iso),
+        playerIds: Array.from(selectedWinners),
+        note: document.getElementById("note").value.trim(),
+        photo: currentPhotoData
+      });
+    }
+    saveData();
+    renderSeasonSelect();
+    renderStandings();
+    renderHistory();
+    closePanel();
+    toast(selectedWinners.size > 0 ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd");
+  });
+
   // ---------- History ----------
   function renderHistory(){
     const entries = data.entries
@@ -607,9 +822,9 @@
       const div = document.createElement("div");
       div.className = "history-item";
       const winners = e.playerIds.map(playerName).join(", ");
-      const dateFormatted = new Date(e.date + "T00:00:00").toLocaleDateString("nl-NL", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+      const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
       div.innerHTML =
-        '<div class="row1"><span class="date">'+dateFormatted+'</span></div>' +
+        '<div class="row1"><span class="date" data-jump="'+e.date+'">'+dateFormatted+'</span></div>' +
         '<div class="winners">🎯 '+winners+'</div>' +
         (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
         (e.photo ? '<img src="'+e.photo+'">' : '') +
@@ -623,9 +838,18 @@
           saveData();
           renderHistory();
           renderStandings();
-          renderPickGrid();
+          renderWeek();
           toast("Verwijderd");
         }
+      });
+    });
+    container.querySelectorAll("[data-jump]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const iso = el.dataset.jump;
+        currentWeekStart = startOfWeek(fromIso(iso));
+        document.querySelector('nav.tabs button[data-tab="home"]').click();
+        renderWeek();
+        openDay(iso);
       });
     });
   }
@@ -658,6 +882,7 @@
           renderPickGrid();
           renderStandings();
           renderHistory();
+          renderWeek();
         }
       });
     });
@@ -676,6 +901,7 @@
           renderPickGrid();
           renderStandings();
           renderHistory();
+          renderWeek();
           toast("Speler verwijderd");
         }
       });
@@ -704,7 +930,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "kruisjescup-backup-" + todayStr() + ".json";
+    a.download = "kruisjescup-backup-" + toIso(new Date()) + ".json";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -725,10 +951,11 @@
         if(confirm("Dit vervangt alle huidige data op dit toestel. Doorgaan?")){
           data = parsed;
           saveData();
-          activeSeason = seasonForDate(new Date());
+          activeSeason = seasonForDate(toIso(new Date()));
           if(!allSeasons().includes(activeSeason) && data.entries.length){
             activeSeason = data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].season;
           }
+          closePanel();
           renderAll();
           toast("Back-up geïmporteerd");
         }
@@ -745,7 +972,8 @@
       if(confirm("Echt zeker? Maak liever eerst een back-up (export).")){
         data = { players: [], entries: [] };
         saveData();
-        activeSeason = seasonForDate(new Date());
+        activeSeason = seasonForDate(toIso(new Date()));
+        closePanel();
         renderAll();
         toast("Alles gewist");
       }
@@ -754,11 +982,10 @@
 
   function renderAll(){
     renderSeasonSelect();
-    renderPickGrid();
     renderStandings();
+    renderWeek();
     renderHistory();
     renderRoster();
-    updateSaveBtn();
   }
 
   renderAll();
