@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Kruisjescup JO17</title>
-<meta name="theme-color" content="#1b5e20">
+<meta name="theme-color" content="#ba2017">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -14,8 +14,14 @@
 <meta name="apple-mobile-web-app-title" content="Kruisjescup">
 <style>
   :root{
+    --brand:#ba2017;
+    --brand-light:#e9433a;
+    --brand-tint:#fbe6e4;
+    --ink:#1d1d1b;
     --green:#1b5e20;
     --green-light:#2e7d32;
+    --warn:#d9822b;
+    --warn-tint:#fbeeda;
     --bg:#f4f6f4;
     --card:#ffffff;
     --border:#dfe3df;
@@ -33,13 +39,14 @@
     padding-bottom:72px;
   }
   header{
-    background:var(--green);
+    background:var(--brand);
     color:#fff;
     padding:16px 16px 12px;
     position:sticky;
     top:0;
     z-index:10;
     box-shadow:0 2px 6px rgba(0,0,0,.15);
+    border-bottom:5px solid var(--ink);
   }
   header h1{
     margin:0;
@@ -92,7 +99,7 @@
   .card h2{
     margin:0 0 12px;
     font-size:1.05rem;
-    color:var(--green);
+    color:var(--brand);
   }
   label{
     display:block;
@@ -135,8 +142,8 @@
   .standings .name{flex:1;font-weight:600;}
   .standings .score{
     font-weight:700;
-    color:var(--green);
-    background:#e6f2e7;
+    color:var(--brand);
+    background:var(--brand-tint);
     border-radius:12px;
     padding:2px 10px;
     font-size:.9rem;
@@ -175,7 +182,7 @@
   .today-btn-row{text-align:center;margin-bottom:12px;}
   .today-btn-row button{
     background:none;
-    color:var(--green);
+    color:var(--brand);
     font-size:.8rem;
     font-weight:600;
     padding:4px 10px;
@@ -197,6 +204,8 @@
     transition:.15s;
     position:relative;
     min-height:64px;
+    min-width:0;
+    overflow:hidden;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -213,8 +222,13 @@
     font-size:1.05rem;
     font-weight:700;
   }
-  .day-cell.today{border-color:var(--green-light);}
-  .day-cell.today .dom{color:var(--green-light);}
+  .day-cell.today{border-color:var(--brand);}
+  .day-cell.today .dom{color:var(--brand);}
+  .day-cell.training-due{
+    background:var(--warn-tint);
+    border-color:var(--warn);
+  }
+  .day-cell.training-due .dom{color:#96601c;}
   .day-cell.has-entry{
     background:#e6f2e7;
     border-color:var(--green);
@@ -232,6 +246,7 @@
     text-overflow:ellipsis;
     white-space:nowrap;
   }
+  .day-cell .mark.warn{color:#96601c;}
 
   /* ---------- Assignment panel ---------- */
   .assign-panel{
@@ -242,7 +257,7 @@
   .assign-panel h3{
     margin:0 0 4px;
     font-size:1rem;
-    color:var(--green);
+    color:var(--brand);
   }
   .assign-panel .sub{
     font-size:.8rem;
@@ -304,7 +319,7 @@
     font-weight:600;
   }
   .btn-primary{
-    background:var(--green);
+    background:var(--brand);
     color:#fff;
   }
   .btn-secondary{
@@ -335,7 +350,7 @@
     justify-content:space-between;
     align-items:baseline;
   }
-  .history-item .date{font-weight:700;color:var(--green);cursor:pointer;}
+  .history-item .date{font-weight:700;color:var(--brand);cursor:pointer;}
   .history-item .winners{margin-top:4px;font-size:.95rem;}
   .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
   .history-item img{
@@ -386,7 +401,7 @@
     gap:2px;
     font-weight:500;
   }
-  nav.tabs button.active{color:var(--green);font-weight:700;}
+  nav.tabs button.active{color:var(--brand);font-weight:700;}
   nav.tabs .icon{font-size:1.2rem;}
   .tabpage{display:none;}
   .tabpage.active{display:block;}
@@ -411,8 +426,8 @@
   .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
   .season-badge{
     display:inline-block;
-    background:#e6f2e7;
-    color:var(--green);
+    background:var(--brand-tint);
+    color:var(--brand);
     border-radius:12px;
     padding:2px 10px;
     font-size:.8rem;
@@ -755,16 +770,22 @@ import { firebaseConfig } from "./firebase-config.js";
     days.forEach((d,i)=>{
       const iso = toIso(d);
       const entry = entryForDate(iso);
+      // Trainingsdagen zijn standaard dinsdag (i=1) en donderdag (i=3).
+      const isTrainingDow = (i === 1 || i === 3);
+      const trainingDue = isTrainingDow && !entry && iso <= todayIso;
       const cell = document.createElement("div");
       let cls = "day-cell";
       if(iso === todayIso) cls += " today";
       if(entry) cls += " has-entry";
+      else if(trainingDue) cls += " training-due";
       if(iso === selectedDate) cls += " selected";
       cell.className = cls;
       let markHtml = "";
       if(entry){
         const names = entry.playerIds.map(playerName).join(", ");
         markHtml = '<span class="mark">✓ ' + names + '</span>';
+      } else if(trainingDue){
+        markHtml = '<span class="mark warn">nog invullen</span>';
       }
       cell.innerHTML =
         '<span class="dow">'+DOW[i]+'</span>' +
