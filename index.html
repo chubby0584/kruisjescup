@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Kruisjescup JO17</title>
+<meta name="theme-color" content="#1b5e20">
+<style>
+  :root{
+    --green:#1b5e20;
+    --green-light:#2e7d32;
+    --bg:#f4f6f4;
+    --card:#ffffff;
+    --border:#dfe3df;
+    --text:#1a1a1a;
+    --muted:#6b6f6b;
+    --gold:#c9a227;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:72px;
+  }
+  header{
+    background:var(--green);
+    color:#fff;
+    padding:16px 16px 12px;
+    position:sticky;
+    top:0;
+    z-index:10;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+  }
+  header h1{
+    margin:0;
+    font-size:1.25rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  header .season-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:8px;
+    font-size:.85rem;
+  }
+  header select{
+    background:rgba(255,255,255,.15);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.4);
+    border-radius:6px;
+    padding:4px 8px;
+    font-size:.85rem;
+  }
+  header select option{color:#000;}
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    margin:0 0 12px;
+    font-size:1.05rem;
+    color:var(--green);
+  }
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    margin:12px 0 4px;
+    color:var(--muted);
+  }
+  input[type=date],input[type=text],textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:1rem;
+    background:#fff;
+    color:var(--text);
+  }
+  textarea{resize:vertical;min-height:44px;}
+  .player-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+    gap:10px;
+    margin-top:8px;
+  }
+  .player-chip{
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:10px 6px;
+    text-align:center;
+    font-size:.85rem;
+    cursor:pointer;
+    background:#fafafa;
+    user-select:none;
+    transition:.15s;
+  }
+  .player-chip.selected{
+    border-color:var(--green);
+    background:#e6f2e7;
+    color:var(--green);
+    font-weight:700;
+  }
+  .player-chip .cnt{
+    display:block;
+    font-size:.7rem;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .player-chip.selected .cnt{color:var(--green-light);}
+  .photo-preview{
+    margin-top:10px;
+    max-width:100%;
+    max-height:220px;
+    border-radius:8px;
+    display:none;
+    border:1px solid var(--border);
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:1rem;
+    font-weight:600;
+  }
+  .btn-primary{
+    background:var(--green);
+    color:#fff;
+    width:100%;
+    margin-top:16px;
+  }
+  .btn-primary:disabled{background:#a5b8a6;cursor:not-allowed;}
+  .btn-secondary{
+    background:#eceeec;
+    color:var(--text);
+  }
+  .btn-danger{
+    background:#fdeceb;
+    color:var(--danger);
+  }
+  .btn-small{
+    padding:6px 10px;
+    font-size:.8rem;
+  }
+  .file-row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .standings{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .standings li{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px;
+    border-bottom:1px solid var(--border);
+  }
+  .standings li:last-child{border-bottom:none;}
+  .standings .rank{
+    width:26px;
+    font-weight:700;
+    color:var(--muted);
+  }
+  .standings li:first-child .rank{color:var(--gold);}
+  .standings .name{flex:1;font-weight:600;}
+  .standings .score{
+    font-weight:700;
+    color:var(--green);
+    background:#e6f2e7;
+    border-radius:12px;
+    padding:2px 10px;
+    font-size:.9rem;
+  }
+  .empty{
+    color:var(--muted);
+    font-size:.9rem;
+    text-align:center;
+    padding:20px 0;
+  }
+  .history-item{
+    border-bottom:1px solid var(--border);
+    padding:12px 0;
+  }
+  .history-item:last-child{border-bottom:none;}
+  .history-item .row1{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .history-item .date{font-weight:700;color:var(--green);}
+  .history-item .winners{margin-top:4px;font-size:.95rem;}
+  .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
+  .history-item img{
+    margin-top:8px;
+    max-width:100%;
+    max-height:200px;
+    border-radius:8px;
+    display:block;
+  }
+  .history-item .actions{margin-top:8px;display:flex;gap:8px;}
+  .roster-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    gap:8px;
+  }
+  .roster-item:last-child{border-bottom:none;}
+  .roster-item input[type=text]{flex:1;}
+  .add-player-row{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .add-player-row input{flex:1;}
+  nav.tabs{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    display:flex;
+    background:#fff;
+    border-top:1px solid var(--border);
+    box-shadow:0 -2px 6px rgba(0,0,0,.08);
+    z-index:10;
+  }
+  nav.tabs button{
+    flex:1;
+    background:none;
+    border-radius:0;
+    padding:10px 4px;
+    font-size:.72rem;
+    color:var(--muted);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    font-weight:500;
+  }
+  nav.tabs button.active{color:var(--green);font-weight:700;}
+  nav.tabs .icon{font-size:1.2rem;}
+  .tabpage{display:none;}
+  .tabpage.active{display:block;}
+  .toast{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#222;
+    color:#fff;
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:.85rem;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s;
+    z-index:20;
+    max-width:90%;
+    text-align:center;
+  }
+  .toast.show{opacity:1;}
+  .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+  .season-badge{
+    display:inline-block;
+    background:#e6f2e7;
+    color:var(--green);
+    border-radius:12px;
+    padding:2px 10px;
+    font-size:.8rem;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎯 Kruisjescup JO17</h1>
+  <div class="season-row">
+    <span id="seasonLabel">Seizoen</span>
+    <select id="seasonSelect"></select>
+  </div>
+</header>
+
+<main>
+
+  <!-- TOEKENNEN -->
+  <section id="tab-toekennen" class="tabpage active">
+    <div class="card">
+      <h2>Kruisje toekennen</h2>
+      <label for="matchDate">Datum eindpartij</label>
+      <input type="date" id="matchDate">
+
+      <label>Winnaar(s) <span class="hint">(tik er meerdere aan bij een gelijkspel)</span></label>
+      <div class="player-grid" id="pickGrid"></div>
+      <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
+
+      <label for="note">Notitie (optioneel)</label>
+      <textarea id="note" placeholder="bijv. penalty's, 3-2"></textarea>
+
+      <label>Foto (optioneel)</label>
+      <div class="file-row">
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+      </div>
+      <img id="photoPreview" class="photo-preview">
+
+      <button class="btn-primary" id="saveBtn" disabled>Kruisje opslaan</button>
+    </div>
+  </section>
+
+  <!-- STAND -->
+  <section id="tab-stand" class="tabpage">
+    <div class="card">
+      <span class="season-badge" id="standSeasonBadge"></span>
+      <h2>Stand</h2>
+      <ul class="standings" id="standingsList"></ul>
+      <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
+    </div>
+  </section>
+
+  <!-- GESCHIEDENIS -->
+  <section id="tab-geschiedenis" class="tabpage">
+    <div class="card">
+      <span class="season-badge" id="histSeasonBadge"></span>
+      <h2>Geschiedenis</h2>
+      <div id="historyList"></div>
+      <p class="empty" id="historyEmpty" style="display:none;">Nog geen kruisjes geregistreerd.</p>
+    </div>
+  </section>
+
+  <!-- SPELERS -->
+  <section id="tab-spelers" class="tabpage">
+    <div class="card">
+      <h2>Spelerslijst</h2>
+      <div id="rosterList"></div>
+      <div class="add-player-row">
+        <input type="text" id="newPlayerName" placeholder="Naam nieuwe speler">
+        <button class="btn-secondary" id="addPlayerBtn">Toevoegen</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTELLINGEN -->
+  <section id="tab-instellingen" class="tabpage">
+    <div class="card">
+      <h2>Back-up</h2>
+      <p class="hint">Alle data (spelers, kruisjes, foto's) staat lokaal in deze browser op dit toestel. Maak regelmatig een export als back-up, of om over te zetten naar een ander toestel.</p>
+      <button class="btn-secondary" id="exportBtn" style="width:100%;margin-top:12px;">⬇️ Exporteer back-up (JSON)</button>
+      <label for="importInput" style="margin-top:16px;">Importeer back-up</label>
+      <input type="file" id="importInput" accept="application/json">
+      <p class="hint">Let op: importeren vervangt alle huidige data op dit toestel.</p>
+    </div>
+    <div class="card">
+      <h2>Gevarenzone</h2>
+      <button class="btn-danger" id="resetBtn" style="width:100%;">Alles wissen</button>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabs">
+  <button data-tab="toekennen" class="active"><span class="icon">✔️</span>Toekennen</button>
+  <button data-tab="stand"><span class="icon">🏆</span>Stand</button>
+  <button data-tab="geschiedenis"><span class="icon">📖</span>Geschiedenis</button>
+  <button data-tab="spelers"><span class="icon">👥</span>Spelers</button>
+  <button data-tab="instellingen"><span class="icon">⚙️</span>Meer</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const STORAGE_KEY = "kruisjescup-data-v1";
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function seasonForDate(d){
+    const date = new Date(d);
+    const y = date.getFullYear();
+    const m = date.getMonth(); // 0-11, August = 7
+    return m >= 6 ? (y + "/" + (y+1)) : ((y-1) + "/" + y);
+  }
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.players) && Array.isArray(parsed.entries)) return parsed;
+      }
+    }catch(e){ console.error("Kon data niet laden", e); }
+    return { players: [], entries: [] };
+  }
+
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  let data = loadData();
+  let selectedWinners = new Set();
+  let currentPhotoData = null;
+
+  // ---------- Toast ----------
+  let toastTimer = null;
+  function toast(msg){
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> el.classList.remove("show"), 2200);
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll("nav.tabs button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      if(btn.dataset.tab === "stand") renderStandings();
+      if(btn.dataset.tab === "geschiedenis") renderHistory();
+      if(btn.dataset.tab === "spelers") renderRoster();
+    });
+  });
+
+  // ---------- Season selector ----------
+  const seasonSelect = document.getElementById("seasonSelect");
+  let activeSeason = seasonForDate(new Date());
+
+  function allSeasons(){
+    const set = new Set(data.entries.map(e=>e.season));
+    set.add(activeSeason);
+    return Array.from(set).sort().reverse();
+  }
+
+  function renderSeasonSelect(){
+    const seasons = allSeasons();
+    seasonSelect.innerHTML = "";
+    seasons.forEach(s=>{
+      const opt = document.createElement("option");
+      opt.value = s; opt.textContent = s;
+      if(s === activeSeason) opt.selected = true;
+      seasonSelect.appendChild(opt);
+    });
+    document.getElementById("standSeasonBadge").textContent = "Seizoen " + activeSeason;
+    document.getElementById("histSeasonBadge").textContent = "Seizoen " + activeSeason;
+  }
+  seasonSelect.addEventListener("change", ()=>{
+    activeSeason = seasonSelect.value;
+    renderSeasonSelect();
+    renderStandings();
+    renderHistory();
+    renderPickGrid();
+  });
+
+  // ---------- Date default ----------
+  const matchDateInput = document.getElementById("matchDate");
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  matchDateInput.value = todayStr();
+
+  // ---------- Player pick grid (Toekennen tab) ----------
+  const pickGrid = document.getElementById("pickGrid");
+  function seasonCounts(season){
+    const counts = {};
+    data.entries.filter(e=>e.season===season).forEach(e=>{
+      e.playerIds.forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
+    });
+    return counts;
+  }
+
+  function renderPickGrid(){
+    pickGrid.innerHTML = "";
+    document.getElementById("noPlayersHint").style.display = data.players.length ? "none" : "block";
+    const counts = seasonCounts(activeSeason);
+    data.players.forEach(p=>{
+      const chip = document.createElement("div");
+      chip.className = "player-chip" + (selectedWinners.has(p.id) ? " selected" : "");
+      chip.innerHTML = p.name + '<span class="cnt">' + (counts[p.id]||0) + ' kruisjes</span>';
+      chip.addEventListener("click", ()=>{
+        if(selectedWinners.has(p.id)) selectedWinners.delete(p.id);
+        else selectedWinners.add(p.id);
+        renderPickGrid();
+        updateSaveBtn();
+      });
+      pickGrid.appendChild(chip);
+    });
+  }
+
+  function updateSaveBtn(){
+    document.getElementById("saveBtn").disabled = selectedWinners.size === 0;
+  }
+
+  // ---------- Photo handling ----------
+  const photoInput = document.getElementById("photoInput");
+  const photoPreview = document.getElementById("photoPreview");
+  photoInput.addEventListener("change", ()=>{
+    const file = photoInput.files[0];
+    if(!file){ currentPhotoData = null; photoPreview.style.display = "none"; return; }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      img.onload = ()=>{
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        currentPhotoData = canvas.toDataURL("image/jpeg", 0.7);
+        photoPreview.src = currentPhotoData;
+        photoPreview.style.display = "block";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- Save entry ----------
+  document.getElementById("saveBtn").addEventListener("click", ()=>{
+    if(selectedWinners.size === 0) return;
+    const dateVal = matchDateInput.value || todayStr();
+    const entry = {
+      id: uid(),
+      date: dateVal,
+      season: seasonForDate(dateVal),
+      playerIds: Array.from(selectedWinners),
+      note: document.getElementById("note").value.trim(),
+      photo: currentPhotoData
+    };
+    data.entries.push(entry);
+    saveData();
+
+    selectedWinners.clear();
+    currentPhotoData = null;
+    photoInput.value = "";
+    photoPreview.style.display = "none";
+    document.getElementById("note").value = "";
+    matchDateInput.value = todayStr();
+    updateSaveBtn();
+
+    if(entry.season !== activeSeason && !allSeasons().includes(activeSeason)){
+      activeSeason = entry.season;
+    }
+    renderSeasonSelect();
+    renderPickGrid();
+    toast("Kruisje opgeslagen ✔️");
+  });
+
+  // ---------- Standings ----------
+  function playerName(id){
+    const p = data.players.find(p=>p.id===id);
+    return p ? p.name : "(verwijderde speler)";
+  }
+
+  function renderStandings(){
+    const counts = seasonCounts(activeSeason);
+    const rows = data.players
+      .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
+      .filter(r => r.count > 0)
+      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+
+    const list = document.getElementById("standingsList");
+    list.innerHTML = "";
+    document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
+    rows.forEach((r,i)=>{
+      const li = document.createElement("li");
+      const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
+      li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+r.name+'</span><span class="score">'+r.count+'</span>';
+      list.appendChild(li);
+    });
+  }
+
+  // ---------- History ----------
+  function renderHistory(){
+    const entries = data.entries
+      .filter(e=>e.season===activeSeason)
+      .sort((a,b)=> b.date.localeCompare(a.date));
+    const container = document.getElementById("historyList");
+    container.innerHTML = "";
+    document.getElementById("historyEmpty").style.display = entries.length ? "none" : "block";
+    entries.forEach(e=>{
+      const div = document.createElement("div");
+      div.className = "history-item";
+      const winners = e.playerIds.map(playerName).join(", ");
+      const dateFormatted = new Date(e.date + "T00:00:00").toLocaleDateString("nl-NL", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+      div.innerHTML =
+        '<div class="row1"><span class="date">'+dateFormatted+'</span></div>' +
+        '<div class="winners">🎯 '+winners+'</div>' +
+        (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
+        (e.photo ? '<img src="'+e.photo+'">' : '') +
+        '<div class="actions"><button class="btn-secondary btn-small" data-del="'+e.id+'">Verwijderen</button></div>';
+      container.appendChild(div);
+    });
+    container.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        if(confirm("Dit kruisje verwijderen?")){
+          data.entries = data.entries.filter(e=>e.id !== btn.dataset.del);
+          saveData();
+          renderHistory();
+          renderStandings();
+          renderPickGrid();
+          toast("Verwijderd");
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ---------- Roster ----------
+  function renderRoster(){
+    const container = document.getElementById("rosterList");
+    container.innerHTML = "";
+    if(data.players.length === 0){
+      container.innerHTML = '<p class="empty">Nog geen spelers toegevoegd.</p>';
+    }
+    data.players.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+      const row = document.createElement("div");
+      row.className = "roster-item";
+      row.innerHTML =
+        '<input type="text" value="'+escapeHtml(p.name)+'" data-id="'+p.id+'">' +
+        '<button class="btn-danger btn-small" data-remove="'+p.id+'">Verwijder</button>';
+      container.appendChild(row);
+    });
+    container.querySelectorAll("input[data-id]").forEach(inp=>{
+      inp.addEventListener("change", ()=>{
+        const p = data.players.find(p=>p.id===inp.dataset.id);
+        if(p && inp.value.trim()){
+          p.name = inp.value.trim();
+          saveData();
+          renderPickGrid();
+          renderStandings();
+          renderHistory();
+        }
+      });
+    });
+    container.querySelectorAll("[data-remove]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const p = data.players.find(p=>p.id===btn.dataset.remove);
+        const usedInEntries = data.entries.some(e=>e.playerIds.includes(btn.dataset.remove));
+        const msg = usedInEntries
+          ? 'Deze speler heeft al kruisjes. Verwijderen laat de historie staan als "(verwijderde speler)". Doorgaan?'
+          : "Speler " + (p ? p.name : "") + " verwijderen?";
+        if(confirm(msg)){
+          data.players = data.players.filter(p=>p.id !== btn.dataset.remove);
+          selectedWinners.delete(btn.dataset.remove);
+          saveData();
+          renderRoster();
+          renderPickGrid();
+          renderStandings();
+          renderHistory();
+          toast("Speler verwijderd");
+        }
+      });
+    });
+  }
+
+  document.getElementById("addPlayerBtn").addEventListener("click", addPlayer);
+  document.getElementById("newPlayerName").addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") addPlayer();
+  });
+  function addPlayer(){
+    const input = document.getElementById("newPlayerName");
+    const name = input.value.trim();
+    if(!name) return;
+    data.players.push({ id: uid(), name: name });
+    saveData();
+    input.value = "";
+    renderRoster();
+    renderPickGrid();
+    toast("Speler toegevoegd");
+  }
+
+  // ---------- Export / Import ----------
+  document.getElementById("exportBtn").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kruisjescup-backup-" + todayStr() + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("Back-up gedownload");
+  });
+
+  document.getElementById("importInput").addEventListener("change", ()=>{
+    const file = document.getElementById("importInput").files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try{
+        const parsed = JSON.parse(e.target.result);
+        if(!parsed || !Array.isArray(parsed.players) || !Array.isArray(parsed.entries)){
+          throw new Error("Ongeldig bestand");
+        }
+        if(confirm("Dit vervangt alle huidige data op dit toestel. Doorgaan?")){
+          data = parsed;
+          saveData();
+          activeSeason = seasonForDate(new Date());
+          if(!allSeasons().includes(activeSeason) && data.entries.length){
+            activeSeason = data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date))[0].season;
+          }
+          renderAll();
+          toast("Back-up geïmporteerd");
+        }
+      }catch(err){
+        alert("Kon bestand niet lezen: " + err.message);
+      }
+      document.getElementById("importInput").value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    if(confirm("Weet je zeker dat je ALLE spelers en kruisjes wilt wissen? Dit kan niet ongedaan gemaakt worden.")){
+      if(confirm("Echt zeker? Maak liever eerst een back-up (export).")){
+        data = { players: [], entries: [] };
+        saveData();
+        activeSeason = seasonForDate(new Date());
+        renderAll();
+        toast("Alles gewist");
+      }
+    }
+  });
+
+  function renderAll(){
+    renderSeasonSelect();
+    renderPickGrid();
+    renderStandings();
+    renderHistory();
+    renderRoster();
+    updateSaveBtn();
+  }
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
