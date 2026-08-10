@@ -530,7 +530,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache,
   collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, writeBatch
@@ -584,17 +584,31 @@ import { firebaseConfig } from "./firebase-config.js";
     const auth = getAuth(app);
     db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
 
-    onSnapshot(collection(db,"players"), snap=>{
-      data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-      updateSyncStatus(snap);
-      renderAllPlayers();
-    }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+    // Wacht op een bevestigde login voordat we data ophalen: als de listeners
+    // starten vóór het inloggen klaar is (bijv. bij een "koude" start vanaf
+    // het beginscherm, zonder eerder opgeslagen sessie), wijst Firestore het
+    // verzoek af met "missing or insufficient permissions" én herstelt dat
+    // niet vanzelf zodra je alsnog bent ingelogd.
+    let subscribed = false;
+    onAuthStateChanged(auth, user=>{
+      if(user && !subscribed){
+        subscribed = true;
 
-    onSnapshot(collection(db,"entries"), snap=>{
-      data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
-      updateSyncStatus(snap);
-      renderAllEntries();
-    }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+        onSnapshot(collection(db,"players"), snap=>{
+          data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+          updateSyncStatus(snap);
+          renderAllPlayers();
+        }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+
+        onSnapshot(collection(db,"entries"), snap=>{
+          data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+          updateSyncStatus(snap);
+          renderAllEntries();
+        }, err=>{ setSyncStatus("⚠️ cloudfout: " + err.message); });
+      } else if(!user){
+        setSyncStatus("verbinden met cloud…");
+      }
+    });
 
     signInAnonymously(auth).catch(err=>{
       setSyncStatus("⚠️ kon niet inloggen: " + err.message);
