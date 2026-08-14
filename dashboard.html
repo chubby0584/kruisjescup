@@ -100,74 +100,6 @@
     letter-spacing:-.01em;
   }
 
-  /* ---------------- Koploper hero ---------------- */
-  @keyframes heroIn{
-    from{opacity:0; transform:scale(.94);}
-    to{opacity:1; transform:scale(1);}
-  }
-  @keyframes shine{
-    0%{transform:translateX(-120%) rotate(20deg);}
-    100%{transform:translateX(320%) rotate(20deg);}
-  }
-  .hero{
-    background:linear-gradient(150deg,#2a2a28 0%, #16160f 100%);
-    border-radius:14px;
-    padding:12px 15px;
-    margin-bottom:12px;
-    color:#fff;
-    position:relative;
-    overflow:hidden;
-    border:2px solid var(--gold);
-    box-shadow:0 4px 14px rgba(0,0,0,.18);
-    animation:heroIn .5s cubic-bezier(.34,1.4,.64,1) both;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .hero::after{
-    content:"";
-    position:absolute;
-    top:-40%;
-    left:0;
-    width:50px;
-    height:190%;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);
-    animation:shine 4.5s ease-in-out 1s infinite;
-  }
-  .hero .crown{font-size:1.7rem;line-height:1;flex:0 0 auto;}
-  .hero .hero-text{flex:1;min-width:0;}
-  .hero .label{
-    display:block;
-    font-size:.62rem;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--gold);
-    font-weight:800;
-  }
-  .hero .leader-name{
-    margin:1px 0 0;
-    font-size:1.15rem;
-    font-weight:800;
-    letter-spacing:-.01em;
-    line-height:1.2;
-  }
-  .hero .leader-count{
-    flex:0 0 auto;
-    text-align:center;
-    line-height:1.1;
-  }
-  .hero .leader-count b{
-    display:block;
-    font-size:1.5rem;
-    color:var(--gold);
-  }
-  .hero .leader-count span{
-    font-size:.6rem;
-    color:#bdb8a8;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-
   /* ---------------- Podium ---------------- */
   .podium{
     display:grid;
@@ -391,8 +323,6 @@
 
 <main>
 
-  <div id="heroWrap"></div>
-
   <div class="card">
     <span class="season-badge" id="standSeasonBadge"></span>
     <h2>🏆 Stand</h2>
@@ -506,30 +436,6 @@ import { firebaseConfig } from "./firebase-config.js";
       .filter(r => r.count > 0)
       .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
   }
-
-  // ---------- Koploper hero ----------
-  function renderHero(){
-    const rows = rankedRows();
-    const wrap = document.getElementById("heroWrap");
-    if(rows.length === 0){ wrap.innerHTML = ""; return; }
-
-    const top = rows[0].count;
-    const leaders = rows.filter(r=>r.count === top);
-    const names = leaders.map(r=>escapeHtml(r.name)).join(" & ");
-    const label = leaders.length > 1 ? "Gedeelde koppositie" : "Koploper";
-
-    wrap.innerHTML =
-      '<div class="hero">' +
-        '<span class="crown">👑</span>' +
-        '<div class="hero-text">' +
-          '<span class="label">' + label + '</span>' +
-          '<p class="leader-name">' + names + '</p>' +
-        '</div>' +
-        '<div class="leader-count"><b>' + top + '</b>' +
-          '<span>' + (top === 1 ? "kruisje" : "kruisjes") + '</span></div>' +
-      '</div>';
-  }
-
 
   // ---------- Podium + lijst ----------
   const STANDINGS_REST_N = 4;
@@ -648,7 +554,6 @@ import { firebaseConfig } from "./firebase-config.js";
 
   function renderAll(){
     renderSeasonSelect();
-    renderHero();
     renderStandings();
     renderFeed();
   }
