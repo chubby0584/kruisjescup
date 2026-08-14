@@ -10,14 +10,17 @@
 <style>
   :root{
     --brand:#ba2017;
+    --brand-dark:#8e1811;
     --brand-tint:#fbe6e4;
     --ink:#1d1d1b;
-    --bg:#f4f6f4;
+    --bg:#f2f4f2;
     --card:#ffffff;
-    --border:#dfe3df;
+    --border:#e2e6e2;
     --text:#1a1a1a;
     --muted:#6b6f6b;
-    --gold:#c9a227;
+    --gold:#d4a017;
+    --silver:#9aa3ab;
+    --bronze:#c2763a;
   }
   *{box-sizing:border-box;}
   body{
@@ -26,37 +29,51 @@
     background:var(--bg);
     color:var(--text);
   }
-  header{
-    background-color:var(--brand);
-    background-image:repeating-linear-gradient(
-      135deg,
-      rgba(255,255,255,.07) 0px, rgba(255,255,255,.07) 14px,
-      transparent 14px, transparent 28px
-    );
-    color:#fff;
-    padding:16px 16px 12px;
-    position:sticky;
-    top:0;
-    z-index:10;
-    box-shadow:0 2px 6px rgba(0,0,0,.15);
-    border-bottom:5px solid var(--ink);
-  }
+
+  /* ---------------- Header ---------------- */
   @keyframes logoPop{
     0%{transform:scale(.6) rotate(-8deg); opacity:0;}
     60%{transform:scale(1.08) rotate(3deg); opacity:1;}
     100%{transform:scale(1) rotate(0deg); opacity:1;}
   }
+  header{
+    background:linear-gradient(160deg, var(--brand) 0%, var(--brand-dark) 100%);
+    color:#fff;
+    padding:18px 16px 16px;
+    border-bottom:5px solid var(--ink);
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,.10) 0px, rgba(255,255,255,.10) 16px,
+      transparent 16px, transparent 32px
+    );
+    pointer-events:none;
+  }
+  .header-inner{
+    max-width:640px;
+    margin:0 auto;
+    position:relative;
+    z-index:1;
+  }
   header h1{
     margin:0;
-    font-size:1.25rem;
+    font-size:1.45rem;
+    letter-spacing:-.02em;
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:10px;
   }
   header h1 .club-logo{
-    height:38px;
+    height:46px;
     width:auto;
     display:block;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
     animation:logoPop .6s cubic-bezier(.34,1.56,.64,1) both;
   }
   @keyframes subtitleFade{
@@ -64,245 +81,385 @@
     10%,90%{opacity:1; transform:translateY(0);}
     96%,100%{opacity:0; transform:translateY(-4px);}
   }
-  header .subtitle-wrap{
-    position:relative;
-    height:18px;
-    margin-top:3px;
-    overflow:hidden;
-  }
-  header .subtitle{
+  .subtitle-wrap{position:relative;height:18px;margin-top:6px;overflow:hidden;}
+  .subtitle{
     position:absolute;
     left:0; top:0;
     margin:0;
-    font-size:.8rem;
+    font-size:.82rem;
     opacity:0;
     white-space:nowrap;
     animation:subtitleFade 12s ease infinite;
   }
-  header .subtitle:nth-child(2){animation-delay:4s;}
-  header .subtitle:nth-child(3){animation-delay:8s;}
-  header .season-row{
+  .subtitle:nth-child(2){animation-delay:4s;}
+  .subtitle:nth-child(3){animation-delay:8s;}
+  .season-row{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-top:10px;
+    margin-top:14px;
     font-size:.85rem;
   }
   header select{
-    background:rgba(255,255,255,.15);
+    background:rgba(255,255,255,.18);
     color:#fff;
-    border:1px solid rgba(255,255,255,.4);
-    border-radius:6px;
-    padding:4px 8px;
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:8px;
+    padding:5px 9px;
     font-size:.85rem;
+    font-weight:600;
   }
   header select option{color:#000;}
-  main{
-    max-width:640px;
-    margin:0 auto;
-    padding:16px;
-  }
+
+  main{max-width:640px;margin:0 auto;padding:16px;}
+
   .card{
     background:var(--card);
     border:1px solid var(--border);
-    border-radius:12px;
-    padding:16px;
+    border-radius:16px;
+    padding:18px;
     margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
   }
   .card h2{
-    margin:0 0 12px;
-    font-size:1.05rem;
-    color:var(--brand);
+    margin:0 0 14px;
+    font-size:1.1rem;
+    color:var(--ink);
+    letter-spacing:-.01em;
   }
-  .standings{list-style:none;margin:0;padding:0;}
+
+  /* ---------------- Koploper hero ---------------- */
+  @keyframes heroIn{
+    from{opacity:0; transform:scale(.94);}
+    to{opacity:1; transform:scale(1);}
+  }
+  @keyframes shine{
+    0%{transform:translateX(-120%) rotate(20deg);}
+    100%{transform:translateX(320%) rotate(20deg);}
+  }
+  .hero{
+    background:linear-gradient(150deg,#2a2a28 0%, #16160f 100%);
+    border-radius:18px;
+    padding:22px 20px;
+    margin-bottom:16px;
+    color:#fff;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    border:2px solid var(--gold);
+    box-shadow:0 6px 22px rgba(0,0,0,.22);
+    animation:heroIn .5s cubic-bezier(.34,1.4,.64,1) both;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    top:-40%;
+    left:0;
+    width:60px;
+    height:190%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    animation:shine 4.5s ease-in-out 1s infinite;
+  }
+  .hero .crown{font-size:2.4rem;line-height:1;display:block;}
+  .hero .label{
+    display:inline-block;
+    margin-top:8px;
+    font-size:.7rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:800;
+  }
+  .hero .leader-name{
+    margin:6px 0 0;
+    font-size:1.75rem;
+    font-weight:800;
+    letter-spacing:-.02em;
+    line-height:1.15;
+  }
+  .hero .leader-count{
+    margin-top:10px;
+    font-size:.95rem;
+    color:#e8e2cf;
+  }
+  .hero .leader-count b{
+    font-size:1.35rem;
+    color:var(--gold);
+    vertical-align:-1px;
+  }
+  .hero .prize{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.14);
+    font-size:.78rem;
+    color:#bdb8a8;
+  }
+
+  /* ---------------- Podium ---------------- */
+  .podium{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    align-items:end;
+    margin-bottom:6px;
+  }
+  .podium-col{text-align:center;min-width:0;}
+  .podium-avatar{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    margin:0 auto 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:.95rem;
+    color:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.16);
+  }
+  .podium-name{
+    font-size:.76rem;
+    font-weight:700;
+    line-height:1.2;
+    margin-bottom:6px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .podium-block{
+    border-radius:10px 10px 0 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding-top:8px;
+    color:#fff;
+    font-weight:800;
+  }
+  .podium-block .medal{font-size:1.1rem;line-height:1;}
+  .podium-block .count{font-size:1.45rem;line-height:1.05;margin-top:3px;}
+  .podium-block .count small{font-size:.58rem;font-weight:600;opacity:.9;display:block;line-height:1.1;margin-top:1px;}
+  .p1 .podium-block{height:116px;background:linear-gradient(180deg,#e8bd3d,#c99512);}
+  .p2 .podium-block{height:98px;background:linear-gradient(180deg,#b6bec6,#8e979f);}
+  .p3 .podium-block{height:86px;background:linear-gradient(180deg,#d08a52,#ab6630);}
+  .p1 .podium-avatar{border:3px solid var(--gold);}
+  .p2 .podium-avatar{border:3px solid var(--silver);}
+  .p3 .podium-avatar{border:3px solid var(--bronze);}
+
+  /* ---------------- Rest of standings ---------------- */
+  .standings{list-style:none;margin:14px 0 0;padding:0;}
   .standings li{
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    padding:10px 8px;
+    gap:10px;
+    padding:9px 4px;
     border-bottom:1px solid var(--border);
-    border-radius:8px;
   }
   .standings li:last-child{border-bottom:none;}
-  .standings .rank{width:30px;font-weight:700;color:var(--muted);font-size:1rem;}
-  .standings .name{flex:1;font-weight:600;}
+  .standings .rank{width:22px;font-weight:800;color:var(--muted);font-size:.9rem;}
+  .avatar{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:.72rem;
+    font-weight:800;
+    flex:0 0 auto;
+  }
+  .standings .name{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .standings .score{
-    font-weight:700;
+    font-weight:800;
     color:var(--brand);
     background:var(--brand-tint);
-    border-radius:12px;
-    padding:2px 10px;
-    font-size:.9rem;
+    border-radius:999px;
+    padding:3px 11px;
+    font-size:.85rem;
   }
-  .standings li.rank-1{
-    background:linear-gradient(90deg, #fdf1cf, transparent 85%);
-    border-bottom-color:transparent;
+
+  /* ---------------- Stats ---------------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
   }
-  .standings li.rank-1 .rank{font-size:1.5rem;width:32px;}
-  .standings li.rank-1 .name{font-size:1.05rem;}
-  .standings li.rank-2{background:linear-gradient(90deg, #eef0f1, transparent 85%);}
-  .standings li.rank-2 .rank{font-size:1.25rem;}
-  .standings li.rank-3{background:linear-gradient(90deg, #fbe6d4, transparent 85%);}
-  .standings li.rank-3 .rank{font-size:1.15rem;}
+  .stat{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px 8px;
+    text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .stat .num{
+    font-size:1.5rem;
+    font-weight:800;
+    color:var(--brand);
+    line-height:1.1;
+  }
+  .stat .lbl{
+    font-size:.7rem;
+    color:var(--muted);
+    margin-top:2px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
   button{
     font-family:inherit;
     cursor:pointer;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     padding:12px 16px;
-    font-size:1rem;
-    font-weight:600;
+    font-size:.95rem;
+    font-weight:700;
   }
   .btn-secondary{background:#eceeec;color:var(--text);}
   .empty{color:var(--muted);font-size:.9rem;text-align:center;padding:20px 0;}
 
-  /* ---------- Trainingen tijdlijn ---------- */
+  /* ---------------- Feed ---------------- */
   @keyframes fadeInUp{
-    from{opacity:0; transform:translateY(8px);}
+    from{opacity:0; transform:translateY(10px);}
     to{opacity:1; transform:translateY(0);}
   }
-  .timeline{list-style:none;margin:0;padding:0;}
-  .timeline-item{
-    position:relative;
-    padding-left:36px;
-    padding-bottom:22px;
+  .post{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    margin-bottom:14px;
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
     animation:fadeInUp .4s ease both;
   }
-  .timeline-item:last-child{padding-bottom:0;}
-  .timeline-item::before{
-    content:"";
-    position:absolute;
-    left:13px;
-    top:26px;
-    bottom:-22px;
-    width:2px;
-    background:var(--border);
+  .post-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:13px 15px;
   }
-  .timeline-item:last-child::before{display:none;}
-  .timeline-dot{
-    position:absolute;
-    left:0;
-    top:0;
-    width:26px;
-    height:26px;
+  .post-icon{
+    width:38px;
+    height:38px;
     border-radius:50%;
-    background:var(--brand);
-    color:#fff;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:.85rem;
-    box-shadow:0 0 0 3px var(--card);
-    z-index:1;
+    font-size:1.1rem;
+    flex:0 0 auto;
+    background:var(--brand-tint);
   }
-  .timeline-item .relative-date{font-weight:700;color:var(--brand);}
-  .timeline-item .full-date{
-    display:block;
-    font-size:.75rem;
-    color:var(--muted);
-    font-weight:400;
-    margin-top:1px;
-  }
-  .timeline-item .winners{margin-top:6px;}
+  .post-icon.match{background:#e4ecf6;}
+  .post-when{font-weight:800;font-size:.98rem;line-height:1.2;}
+  .post-date{font-size:.74rem;color:var(--muted);margin-top:1px;}
+  .post-body{padding:0 15px 13px;}
+  .post-body.no-photo{padding-bottom:15px;}
   .winner-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--brand-tint);
+    color:var(--brand);
+    border-radius:999px;
+    padding:5px 12px 5px 5px;
+    font-size:.86rem;
+    font-weight:700;
+    margin:3px 5px 3px 0;
+  }
+  .winner-badge .avatar{width:24px;height:24px;font-size:.62rem;}
+  .match-line{
+    font-weight:800;
+    font-size:1.05rem;
+    color:var(--ink);
+  }
+  .match-line .score{
+    color:var(--brand);
+    background:var(--brand-tint);
+    border-radius:8px;
+    padding:1px 9px;
+    margin-left:4px;
+  }
+  .story{
+    margin-top:10px;
+    background:#fbf8f0;
+    border-left:3px solid var(--gold);
+    border-radius:0 10px 10px 0;
+    padding:10px 12px;
+    font-size:.89rem;
+    color:#584f3f;
+    font-style:italic;
+    line-height:1.45;
+  }
+  .post img{
+    width:100%;
+    max-height:420px;
+    object-fit:cover;
+    display:block;
+    background:#eee;
+  }
+  .season-badge{
     display:inline-block;
     background:var(--brand-tint);
     color:var(--brand);
     border-radius:999px;
     padding:3px 11px;
-    font-size:.85rem;
-    font-weight:600;
-    margin:2px 4px 2px 0;
-  }
-  .match-line{
-    margin-top:6px;
+    font-size:.75rem;
     font-weight:700;
+    margin-bottom:10px;
+  }
+  .section-title{
+    margin:22px 4px 12px;
+    font-size:1.1rem;
+    font-weight:800;
     color:var(--ink);
-    font-size:.98rem;
-  }
-  .match-line .score{color:var(--brand);}
-  .story{
-    margin-top:8px;
-    background:#fbf8f0;
-    border:1px solid #efe6cf;
-    border-radius:10px;
-    padding:10px 12px;
-    font-size:.88rem;
-    color:#5a5040;
-    font-style:italic;
-    position:relative;
-  }
-  .story::before{
-    content:"“";
-    font-family:Georgia,serif;
-    font-style:normal;
-    font-size:1.6rem;
-    color:var(--gold);
-    position:absolute;
-    left:6px;
-    top:-2px;
-    line-height:1;
-  }
-  .story-text{padding-left:16px;display:block;}
-  .timeline-item img{
-    margin-top:10px;
-    max-width:100%;
-    max-height:340px;
-    border-radius:12px;
-    box-shadow:0 4px 14px rgba(0,0,0,.14);
-    display:block;
-  }
-  .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
-  .season-badge{
-    display:inline-block;
-    background:var(--brand-tint);
-    color:var(--brand);
-    border-radius:12px;
-    padding:2px 10px;
-    font-size:.8rem;
-    font-weight:600;
-    margin-bottom:8px;
+    letter-spacing:-.01em;
   }
   footer{
     text-align:center;
     color:var(--muted);
     font-size:.75rem;
-    padding:8px 16px 32px;
+    padding:12px 16px 36px;
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
-  <div class="subtitle-wrap">
-    <p class="subtitle">Voor spelers &amp; ouders — alleen om te bekijken 👀</p>
-    <p class="subtitle">Wie gaat er dit seizoen met de schoenenbon naar huis? 👟</p>
-    <p class="subtitle">Elke training een kans op een kruisje! 🎯</p>
-  </div>
-  <div class="season-row">
-    <span>Seizoen</span>
-    <select id="seasonSelect"></select>
+  <div class="header-inner">
+    <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
+    <div class="subtitle-wrap">
+      <p class="subtitle">Wie gaat er dit seizoen met de schoenenbon naar huis? 👟</p>
+      <p class="subtitle">Elke training een kans op een kruisje! 🎯</p>
+      <p class="subtitle">Voor spelers &amp; ouders — volg de stand live 👀</p>
+    </div>
+    <div class="season-row">
+      <span>Seizoen</span>
+      <select id="seasonSelect"></select>
+    </div>
   </div>
 </header>
 
 <main>
 
-  <div class="card">
+  <div id="heroWrap"></div>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="card" style="margin-top:16px;">
     <span class="season-badge" id="standSeasonBadge"></span>
     <h2>🏆 Stand</h2>
+    <div class="podium" id="podium"></div>
     <ul class="standings" id="standingsList"></ul>
-    <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
-    <button class="btn-secondary" id="standingsToggleBtn" style="width:100%;margin-top:12px;display:none;"></button>
+    <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen — de cup is nog helemaal open!</p>
+    <button class="btn-secondary" id="standingsToggleBtn" style="width:100%;margin-top:14px;display:none;"></button>
   </div>
 
-  <div class="card">
-    <span class="season-badge" id="feedSeasonBadge"></span>
-    <h2>📸 Trainingen</h2>
-    <div id="feedList"></div>
-    <p class="empty" id="feedEmpty" style="display:none;">Nog geen trainingen geregistreerd.</p>
-    <button class="btn-secondary" id="feedMoreBtn" style="width:100%;margin-top:12px;display:none;">Meer laden</button>
-  </div>
+  <h2 class="section-title">📸 Trainingen &amp; wedstrijden</h2>
+  <div id="feedList"></div>
+  <p class="empty" id="feedEmpty" style="display:none;">Nog niets geregistreerd dit seizoen.</p>
+  <button class="btn-secondary" id="feedMoreBtn" style="width:100%;display:none;">Meer laden</button>
 
 </main>
 
@@ -324,7 +481,7 @@ import { firebaseConfig } from "./firebase-config.js";
     return m >= 6 ? (y + "/" + (y+1)) : ((y-1) + "/" + y);
   }
   function escapeHtml(s){
-    return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
   function relativeDate(iso){
     const today = new Date();
@@ -335,6 +492,22 @@ import { firebaseConfig } from "./firebase-config.js";
     if(diffDays > 1 && diffDays <= 6) return diffDays + " dagen geleden";
     if(diffDays < 0) return "Binnenkort";
     return null;
+  }
+  function initials(name){
+    const parts = String(name).trim().split(/\s+/).filter(w=>w.length>2 || /^[A-Z]/.test(w));
+    const first = parts[0] || name;
+    const last = parts.length > 1 ? parts[parts.length-1] : "";
+    return ((first[0]||"") + (last[0]||"")).toUpperCase();
+  }
+  // Vaste kleur per speler, afgeleid van de naam.
+  function avatarColor(name){
+    let h = 0;
+    for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 360;
+    return "hsl(" + h + ",52%,42%)";
+  }
+  function avatarHtml(name, cls){
+    return '<span class="avatar ' + (cls||"") + '" style="background:' + avatarColor(name) + '">' +
+      escapeHtml(initials(name)) + '</span>';
   }
 
   let data = { players: [], entries: [] };
@@ -358,30 +531,73 @@ import { firebaseConfig } from "./firebase-config.js";
       seasonSelect.appendChild(opt);
     });
     document.getElementById("standSeasonBadge").textContent = "Seizoen " + activeSeason;
-    document.getElementById("feedSeasonBadge").textContent = "Seizoen " + activeSeason;
   }
   seasonSelect.addEventListener("change", ()=>{
     activeSeason = seasonSelect.value;
     standingsExpanded = false;
     feedVisibleCount = FEED_PAGE_SIZE;
-    renderSeasonSelect();
-    renderStandings();
-    renderFeed();
+    renderAll();
   });
 
   function playerName(id){
     const p = data.players.find(p=>p.id===id);
     return p ? p.name : "(verwijderde speler)";
   }
-  function seasonCounts(season){
+  function seasonEntries(){
+    return data.entries.filter(e=>e.season===activeSeason);
+  }
+  function seasonCounts(){
     const counts = {};
-    data.entries.filter(e=>e.season===season).forEach(e=>{
-      e.playerIds.forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
+    seasonEntries().forEach(e=>{
+      (e.playerIds||[]).forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
     });
     return counts;
   }
+  function rankedRows(){
+    const counts = seasonCounts();
+    return data.players
+      .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
+      .filter(r => r.count > 0)
+      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+  }
 
-  const STANDINGS_TOP_N = 4;
+  // ---------- Koploper hero ----------
+  function renderHero(){
+    const rows = rankedRows();
+    const wrap = document.getElementById("heroWrap");
+    if(rows.length === 0){ wrap.innerHTML = ""; return; }
+
+    const top = rows[0].count;
+    const leaders = rows.filter(r=>r.count === top);
+    const names = leaders.map(r=>escapeHtml(r.name)).join(" & ");
+    const label = leaders.length > 1 ? "Gedeelde koppositie" : "Koploper";
+
+    wrap.innerHTML =
+      '<div class="hero">' +
+        '<span class="crown">👑</span>' +
+        '<span class="label">' + label + '</span>' +
+        '<p class="leader-name">' + names + '</p>' +
+        '<div class="leader-count"><b>' + top + '</b> ' + (top === 1 ? "kruisje" : "kruisjes") + '</div>' +
+        '<div class="prize">Speelt om de schoenenbon t.w.v. €100 👟</div>' +
+      '</div>';
+  }
+
+  // ---------- Stats ----------
+  function renderStats(){
+    const entries = seasonEntries();
+    const trainingen = entries.filter(e=>e.type !== "wedstrijd").length;
+    const wedstrijden = entries.filter(e=>e.type === "wedstrijd").length;
+    const kruisjes = entries.reduce((sum,e)=> sum + (e.playerIds||[]).length, 0);
+    const row = document.getElementById("statsRow");
+    row.innerHTML =
+      '<div class="stat"><div class="num">' + kruisjes + '</div><div class="lbl">Kruisjes</div></div>' +
+      '<div class="stat"><div class="num">' + trainingen + '</div><div class="lbl">Trainingen</div></div>' +
+      '<div class="stat"><div class="num">' + wedstrijden + '</div><div class="lbl">Wedstrijden</div></div>';
+    row.style.display = entries.length ? "grid" : "none";
+  }
+
+  // ---------- Podium + lijst ----------
+  const STANDINGS_REST_N = 4;
   let standingsExpanded = false;
   const standingsToggleBtn = document.getElementById("standingsToggleBtn");
   standingsToggleBtn.addEventListener("click", ()=>{
@@ -390,34 +606,54 @@ import { firebaseConfig } from "./firebase-config.js";
   });
 
   function renderStandings(){
-    const counts = seasonCounts(activeSeason);
-    const rows = data.players
-      .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
-      .filter(r => r.count > 0)
-      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
-
-    const showAll = standingsExpanded || rows.length <= STANDINGS_TOP_N;
-    const visibleRows = showAll ? rows : rows.slice(0, STANDINGS_TOP_N);
-
+    const rows = rankedRows();
+    const podium = document.getElementById("podium");
     const list = document.getElementById("standingsList");
-    list.innerHTML = "";
     document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
-    visibleRows.forEach((r,i)=>{
-      const li = document.createElement("li");
-      const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
-      if(i < 3) li.className = "rank-" + (i+1);
-      li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+escapeHtml(r.name)+'</span><span class="score">'+r.count+'</span>';
-      list.appendChild(li);
-    });
 
-    if(rows.length > STANDINGS_TOP_N){
+    // Podium: plaats 2 links, 1 midden, 3 rechts.
+    const top3 = rows.slice(0,3);
+    if(top3.length === 0){
+      podium.style.display = "none";
+    } else {
+      podium.style.display = "grid";
+      const order = [1,0,2]; // index in top3 -> kolomvolgorde
+      const medals = ["🥇","🥈","🥉"];
+      podium.innerHTML = order.map(idx=>{
+        const r = top3[idx];
+        if(!r) return '<div class="podium-col"></div>';
+        return '<div class="podium-col p' + (idx+1) + '">' +
+          avatarHtml(r.name, "podium-avatar") +
+          '<div class="podium-name">' + escapeHtml(r.name) + '</div>' +
+          '<div class="podium-block">' +
+            '<span class="medal">' + medals[idx] + '</span>' +
+            '<span class="count">' + r.count + '<small>' + (r.count === 1 ? "kruisje" : "kruisjes") + '</small></span>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    // Overige spelers onder het podium.
+    const rest = rows.slice(3);
+    const visibleRest = standingsExpanded ? rest : rest.slice(0, STANDINGS_REST_N);
+    list.innerHTML = visibleRest.map((r,i)=>
+      '<li><span class="rank">' + (i+4) + '</span>' +
+      avatarHtml(r.name) +
+      '<span class="name">' + escapeHtml(r.name) + '</span>' +
+      '<span class="score">' + r.count + '</span></li>'
+    ).join("");
+
+    if(rest.length > STANDINGS_REST_N){
       standingsToggleBtn.style.display = "block";
-      standingsToggleBtn.textContent = standingsExpanded ? "Toon minder" : "Bekijk hele lijst (" + rows.length + ")";
+      standingsToggleBtn.textContent = standingsExpanded
+        ? "Toon minder"
+        : "Bekijk hele lijst (" + rows.length + " spelers)";
     } else {
       standingsToggleBtn.style.display = "none";
     }
   }
 
+  // ---------- Feed ----------
   const FEED_PAGE_SIZE = 6;
   let feedVisibleCount = FEED_PAGE_SIZE;
   const feedMoreBtn = document.getElementById("feedMoreBtn");
@@ -427,71 +663,74 @@ import { firebaseConfig } from "./firebase-config.js";
   });
 
   function renderFeed(){
-    const entries = data.entries
-      .filter(e=>e.season===activeSeason)
-      .sort((a,b)=> b.date.localeCompare(a.date));
+    const entries = seasonEntries().sort((a,b)=> b.date.localeCompare(a.date));
     const container = document.getElementById("feedList");
     container.innerHTML = "";
     document.getElementById("feedEmpty").style.display = entries.length ? "none" : "block";
 
-    container.className = "timeline";
-
-    const visible = entries.slice(0, feedVisibleCount);
-    visible.forEach((e,i)=>{
+    entries.slice(0, feedVisibleCount).forEach((e,i)=>{
       const div = document.createElement("div");
-      div.className = "timeline-item";
+      div.className = "post";
       div.style.animationDelay = Math.min(i * 0.05, 0.4) + "s";
-      const isWedstrijd = e.type === "wedstrijd";
-      const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"short", year:"numeric"});
-      const rel = relativeDate(e.date);
-      const dot = isWedstrijd ? "⚽" : (e.photo ? "📸" : "🎯");
 
-      let contentHtml;
+      const isWedstrijd = e.type === "wedstrijd";
+      const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+      const rel = relativeDate(e.date);
+      const icon = isWedstrijd ? "⚽" : "🎯";
+
+      let bodyHtml;
       if(isWedstrijd){
         const opponent = e.opponent ? escapeHtml(e.opponent) : "Wedstrijd";
-        const scoreHtml = e.score ? ' <span class="score">— ' + escapeHtml(e.score) + '</span>' : '';
-        contentHtml = '<div class="match-line">⚽ vs ' + opponent + scoreHtml + '</div>';
+        const scoreHtml = e.score ? '<span class="score">' + escapeHtml(e.score) + '</span>' : '';
+        bodyHtml = '<div class="match-line">vs ' + opponent + scoreHtml + '</div>';
       } else {
-        const badges = e.playerIds.map(id=>'<span class="winner-badge">'+escapeHtml(playerName(id))+'</span>').join("");
-        contentHtml = '<div class="winners">'+badges+'</div>';
+        bodyHtml = '<div>' + (e.playerIds||[]).map(id=>{
+          const n = playerName(id);
+          return '<span class="winner-badge">' + avatarHtml(n) + escapeHtml(n) + '</span>';
+        }).join("") + '</div>';
       }
 
       div.innerHTML =
-        '<span class="timeline-dot">'+dot+'</span>' +
-        '<div class="relative-date">' + (rel || dateFormatted) +
-          (rel ? '<span class="full-date">'+dateFormatted+'</span>' : '') +
+        '<div class="post-head">' +
+          '<span class="post-icon' + (isWedstrijd ? " match" : "") + '">' + icon + '</span>' +
+          '<div><div class="post-when">' + (rel || dateFormatted) + '</div>' +
+          (rel ? '<div class="post-date">' + dateFormatted + '</div>' : '') + '</div>' +
         '</div>' +
-        contentHtml +
-        (e.note ? '<div class="story"><span class="story-text">'+escapeHtml(e.note)+'</span></div>' : '') +
-        (e.photo ? '<img src="'+e.photo+'" loading="lazy">' : '');
+        '<div class="post-body' + (e.photo ? "" : " no-photo") + '">' +
+          bodyHtml +
+          (e.note ? '<div class="story">' + escapeHtml(e.note) + '</div>' : '') +
+        '</div>' +
+        (e.photo ? '<img src="' + e.photo + '" loading="lazy" alt="">' : '');
+
       container.appendChild(div);
     });
 
     feedMoreBtn.style.display = entries.length > feedVisibleCount ? "block" : "none";
   }
 
+  function renderAll(){
+    renderSeasonSelect();
+    renderHero();
+    renderStats();
+    renderStandings();
+    renderFeed();
+  }
+
   const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
   if(configFilledIn){
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     onSnapshot(collection(db,"players"), snap=>{
       data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-      renderSeasonSelect();
-      renderStandings();
-      renderFeed();
+      renderAll();
     });
     onSnapshot(collection(db,"entries"), snap=>{
       data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
-      renderSeasonSelect();
-      renderStandings();
-      renderFeed();
+      renderAll();
     });
   }
 
-  renderSeasonSelect();
-  renderStandings();
-  renderFeed();
+  renderAll();
 })();
 </script>
 </body>
