@@ -41,6 +41,11 @@
     box-shadow:0 2px 6px rgba(0,0,0,.15);
     border-bottom:5px solid var(--ink);
   }
+  @keyframes logoPop{
+    0%{transform:scale(.6) rotate(-8deg); opacity:0;}
+    60%{transform:scale(1.08) rotate(3deg); opacity:1;}
+    100%{transform:scale(1) rotate(0deg); opacity:1;}
+  }
   header h1{
     margin:0;
     font-size:1.25rem;
@@ -48,8 +53,34 @@
     align-items:center;
     gap:8px;
   }
-  header h1 .club-logo{height:34px;width:auto;display:block;}
-  header .subtitle{margin:2px 0 0;font-size:.8rem;opacity:.9;}
+  header h1 .club-logo{
+    height:38px;
+    width:auto;
+    display:block;
+    animation:logoPop .6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes subtitleFade{
+    0%,4%{opacity:0; transform:translateY(4px);}
+    10%,90%{opacity:1; transform:translateY(0);}
+    96%,100%{opacity:0; transform:translateY(-4px);}
+  }
+  header .subtitle-wrap{
+    position:relative;
+    height:18px;
+    margin-top:3px;
+    overflow:hidden;
+  }
+  header .subtitle{
+    position:absolute;
+    left:0; top:0;
+    margin:0;
+    font-size:.8rem;
+    opacity:0;
+    white-space:nowrap;
+    animation:subtitleFade 12s ease infinite;
+  }
+  header .subtitle:nth-child(2){animation-delay:4s;}
+  header .subtitle:nth-child(3){animation-delay:8s;}
   header .season-row{
     display:flex;
     align-items:center;
@@ -183,7 +214,36 @@
     font-weight:600;
     margin:2px 4px 2px 0;
   }
-  .timeline-item .note{margin-top:6px;font-size:.85rem;color:var(--muted);font-style:italic;}
+  .match-line{
+    margin-top:6px;
+    font-weight:700;
+    color:var(--ink);
+    font-size:.98rem;
+  }
+  .match-line .score{color:var(--brand);}
+  .story{
+    margin-top:8px;
+    background:#fbf8f0;
+    border:1px solid #efe6cf;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:.88rem;
+    color:#5a5040;
+    font-style:italic;
+    position:relative;
+  }
+  .story::before{
+    content:"“";
+    font-family:Georgia,serif;
+    font-style:normal;
+    font-size:1.6rem;
+    color:var(--gold);
+    position:absolute;
+    left:6px;
+    top:-2px;
+    line-height:1;
+  }
+  .story-text{padding-left:16px;display:block;}
   .timeline-item img{
     margin-top:10px;
     max-width:100%;
@@ -215,7 +275,11 @@
 
 <header>
   <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
-  <p class="subtitle">Voor spelers &amp; ouders — alleen om te bekijken</p>
+  <div class="subtitle-wrap">
+    <p class="subtitle">Voor spelers &amp; ouders — alleen om te bekijken 👀</p>
+    <p class="subtitle">Wie gaat er dit seizoen met de schoenenbon naar huis? 👟</p>
+    <p class="subtitle">Elke training een kans op een kruisje! 🎯</p>
+  </div>
   <div class="season-row">
     <span>Seizoen</span>
     <select id="seasonSelect"></select>
@@ -377,17 +441,28 @@ import { firebaseConfig } from "./firebase-config.js";
       const div = document.createElement("div");
       div.className = "timeline-item";
       div.style.animationDelay = Math.min(i * 0.05, 0.4) + "s";
-      const badges = e.playerIds.map(id=>'<span class="winner-badge">'+escapeHtml(playerName(id))+'</span>').join("");
+      const isWedstrijd = e.type === "wedstrijd";
       const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"short", year:"numeric"});
       const rel = relativeDate(e.date);
-      const dot = e.photo ? "📸" : "🎯";
+      const dot = isWedstrijd ? "⚽" : (e.photo ? "📸" : "🎯");
+
+      let contentHtml;
+      if(isWedstrijd){
+        const opponent = e.opponent ? escapeHtml(e.opponent) : "Wedstrijd";
+        const scoreHtml = e.score ? ' <span class="score">— ' + escapeHtml(e.score) + '</span>' : '';
+        contentHtml = '<div class="match-line">⚽ vs ' + opponent + scoreHtml + '</div>';
+      } else {
+        const badges = e.playerIds.map(id=>'<span class="winner-badge">'+escapeHtml(playerName(id))+'</span>').join("");
+        contentHtml = '<div class="winners">'+badges+'</div>';
+      }
+
       div.innerHTML =
         '<span class="timeline-dot">'+dot+'</span>' +
         '<div class="relative-date">' + (rel || dateFormatted) +
           (rel ? '<span class="full-date">'+dateFormatted+'</span>' : '') +
         '</div>' +
-        '<div class="winners">'+badges+'</div>' +
-        (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
+        contentHtml +
+        (e.note ? '<div class="story"><span class="story-text">'+escapeHtml(e.note)+'</span></div>' : '') +
         (e.photo ? '<img src="'+e.photo+'" loading="lazy">' : '');
       container.appendChild(div);
     });

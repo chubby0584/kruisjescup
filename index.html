@@ -264,6 +264,26 @@
     color:var(--muted);
     margin-bottom:10px;
   }
+  .type-toggle{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .type-btn{
+    flex:1;
+    background:#fafafa;
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:10px 6px;
+    font-size:.9rem;
+    color:var(--text);
+  }
+  .type-btn.selected{
+    border-color:var(--brand);
+    background:var(--brand-tint);
+    color:var(--brand);
+    font-weight:700;
+  }
   .player-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
@@ -519,13 +539,31 @@
 
       <div class="assign-panel" id="assignPanel" style="display:none;">
         <h3 id="assignDateTitle"></h3>
-        <p class="sub">Tik de speler(s) aan die de eindpartij die dag hebben gewonnen.</p>
 
-        <div class="player-grid" id="pickGrid"></div>
-        <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
+        <div id="entryTypeRow" style="display:none;">
+          <label>Type</label>
+          <div class="type-toggle">
+            <button type="button" class="type-btn" data-type="training">🏃 Training</button>
+            <button type="button" class="type-btn" data-type="wedstrijd">⚽ Wedstrijd</button>
+          </div>
+        </div>
+
+        <div id="trainingFields">
+          <p class="sub">Tik de speler(s) aan die de eindpartij die dag hebben gewonnen.</p>
+          <div class="player-grid" id="pickGrid"></div>
+          <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
+        </div>
+
+        <div id="wedstrijdFields" style="display:none;">
+          <p class="sub">Registreer de wedstrijd — hier is geen kruisje aan gekoppeld.</p>
+          <label for="opponent">Tegenstander</label>
+          <input type="text" id="opponent" placeholder="bijv. Ajax JO17">
+          <label for="score">Uitslag</label>
+          <input type="text" id="score" placeholder="bijv. 3-1">
+        </div>
 
         <label for="note">Notitie (optioneel)</label>
-        <textarea id="note" placeholder="bijv. penalty's, 3-2"></textarea>
+        <textarea id="note" placeholder="Vertel er kort iets leuks bij…"></textarea>
 
         <label>Foto (optioneel)</label>
         <input type="file" id="photoInput" accept="image/*">
@@ -860,7 +898,10 @@ import { firebaseConfig } from "./firebase-config.js";
       if(iso === selectedDate) cls += " selected";
       cell.className = cls;
       let markHtml = "";
-      if(entry){
+      if(entry && entry.type === "wedstrijd"){
+        const label = entry.opponent ? ("vs " + entry.opponent) : "Wedstrijd";
+        markHtml = '<span class="mark">⚽ ' + label + '</span>';
+      } else if(entry){
         const names = entry.playerIds.map(playerName).join(", ");
         markHtml = '<span class="mark">✓ ' + names + '</span>';
       } else if(trainingDue){
@@ -891,6 +932,29 @@ import { firebaseConfig } from "./firebase-config.js";
   // ---------- Assignment panel ----------
   const assignPanel = document.getElementById("assignPanel");
   const pickGrid = document.getElementById("pickGrid");
+  const entryTypeRow = document.getElementById("entryTypeRow");
+  const trainingFields = document.getElementById("trainingFields");
+  const wedstrijdFields = document.getElementById("wedstrijdFields");
+  const opponentInput = document.getElementById("opponent");
+  const scoreInput = document.getElementById("score");
+  let currentEntryType = "training";
+
+  function dowIndex(iso){
+    const jsDay = fromIso(iso).getDay(); // 0=Sun..6=Sat
+    return jsDay === 0 ? 6 : jsDay - 1; // 0=Ma..6=Zo
+  }
+
+  function setEntryType(type){
+    currentEntryType = type;
+    document.querySelectorAll(".type-btn").forEach(btn=>{
+      btn.classList.toggle("selected", btn.dataset.type === type);
+    });
+    trainingFields.style.display = type === "wedstrijd" ? "none" : "block";
+    wedstrijdFields.style.display = type === "wedstrijd" ? "block" : "none";
+  }
+  document.querySelectorAll(".type-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=> setEntryType(btn.dataset.type));
+  });
 
   function openDay(iso){
     if(selectedDate === iso){
@@ -902,10 +966,16 @@ import { firebaseConfig } from "./firebase-config.js";
     selectedWinners = new Set(entry ? entry.playerIds : []);
     currentPhotoData = entry ? entry.photo : null;
     document.getElementById("note").value = entry ? (entry.note||"") : "";
+    opponentInput.value = entry ? (entry.opponent||"") : "";
+    scoreInput.value = entry ? (entry.score||"") : "";
     const preview = document.getElementById("photoPreview");
     if(currentPhotoData){ preview.src = currentPhotoData; preview.style.display = "block"; }
     else { preview.style.display = "none"; }
     document.getElementById("photoInput").value = "";
+
+    const isSaturday = dowIndex(iso) === 5;
+    entryTypeRow.style.display = isSaturday ? "block" : "none";
+    setEntryType(entry && entry.type === "wedstrijd" ? "wedstrijd" : "training");
 
     const d = fromIso(iso);
     document.getElementById("assignDateTitle").textContent =
@@ -922,6 +992,7 @@ import { firebaseConfig } from "./firebase-config.js";
     assignPanel.style.display = "none";
     selectedWinners = new Set();
     currentPhotoData = null;
+    setEntryType("training");
     renderWeek();
   }
   document.getElementById("closePanelBtn").addEventListener("click", closePanel);
@@ -973,12 +1044,17 @@ import { firebaseConfig } from "./firebase-config.js";
   document.getElementById("saveBtn").addEventListener("click", async ()=>{
     if(!selectedDate || !db) return;
     const iso = selectedDate;
+    const isWedstrijd = currentEntryType === "wedstrijd";
     const hasWinners = selectedWinners.size > 0;
+    const shouldSave = isWedstrijd || hasWinners;
     try{
-      if(hasWinners){
+      if(shouldSave){
         await setDoc(doc(db,"entries",iso), {
+          type: currentEntryType,
           season: seasonForDate(iso),
-          playerIds: Array.from(selectedWinners),
+          playerIds: isWedstrijd ? [] : Array.from(selectedWinners),
+          opponent: isWedstrijd ? opponentInput.value.trim() : null,
+          score: isWedstrijd ? scoreInput.value.trim() : null,
           note: document.getElementById("note").value.trim(),
           photo: currentPhotoData || null
         });
@@ -986,7 +1062,7 @@ import { firebaseConfig } from "./firebase-config.js";
         await deleteDoc(doc(db,"entries",iso));
       }
       closePanel();
-      toast(hasWinners ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd");
+      toast(isWedstrijd ? "Wedstrijd opgeslagen ⚽" : (hasWinners ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd"));
     }catch(err){
       toast("Opslaan mislukt: " + err.message);
     }
@@ -1003,11 +1079,13 @@ import { firebaseConfig } from "./firebase-config.js";
     entries.forEach(e=>{
       const div = document.createElement("div");
       div.className = "history-item";
-      const winners = e.playerIds.map(playerName).join(", ");
       const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+      const winnersLine = e.type === "wedstrijd"
+        ? '<div class="winners">⚽ ' + escapeHtml(e.opponent ? ("vs " + e.opponent) : "Wedstrijd") + (e.score ? " — " + escapeHtml(e.score) : "") + '</div>'
+        : '<div class="winners">🎯 ' + escapeHtml(e.playerIds.map(playerName).join(", ")) + '</div>';
       div.innerHTML =
         '<div class="row1"><span class="date" data-jump="'+e.date+'">'+dateFormatted+'</span></div>' +
-        '<div class="winners">🎯 '+winners+'</div>' +
+        winnersLine +
         (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
         (e.photo ? '<img src="'+e.photo+'">' : '') +
         '<div class="actions"><button class="btn-secondary btn-small" data-del="'+e.date+'">Verwijderen</button></div>';
