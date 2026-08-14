@@ -89,13 +89,13 @@
     background:var(--card);
     border:1px solid var(--border);
     border-radius:16px;
-    padding:18px;
-    margin-bottom:16px;
+    padding:14px 16px;
+    margin-bottom:14px;
     box-shadow:0 1px 3px rgba(0,0,0,.05);
   }
   .card h2{
-    margin:0 0 14px;
-    font-size:1.1rem;
+    margin:0 0 12px;
+    font-size:1.05rem;
     color:var(--ink);
     letter-spacing:-.01em;
   }
@@ -111,60 +111,61 @@
   }
   .hero{
     background:linear-gradient(150deg,#2a2a28 0%, #16160f 100%);
-    border-radius:18px;
-    padding:22px 20px;
-    margin-bottom:16px;
+    border-radius:14px;
+    padding:12px 15px;
+    margin-bottom:12px;
     color:#fff;
-    text-align:center;
     position:relative;
     overflow:hidden;
     border:2px solid var(--gold);
-    box-shadow:0 6px 22px rgba(0,0,0,.22);
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
     animation:heroIn .5s cubic-bezier(.34,1.4,.64,1) both;
+    display:flex;
+    align-items:center;
+    gap:12px;
   }
   .hero::after{
     content:"";
     position:absolute;
     top:-40%;
     left:0;
-    width:60px;
+    width:50px;
     height:190%;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);
     animation:shine 4.5s ease-in-out 1s infinite;
   }
-  .hero .crown{font-size:2.4rem;line-height:1;display:block;}
+  .hero .crown{font-size:1.7rem;line-height:1;flex:0 0 auto;}
+  .hero .hero-text{flex:1;min-width:0;}
   .hero .label{
-    display:inline-block;
-    margin-top:8px;
-    font-size:.7rem;
-    letter-spacing:.16em;
+    display:block;
+    font-size:.62rem;
+    letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--gold);
     font-weight:800;
   }
   .hero .leader-name{
-    margin:6px 0 0;
-    font-size:1.75rem;
+    margin:1px 0 0;
+    font-size:1.15rem;
     font-weight:800;
-    letter-spacing:-.02em;
-    line-height:1.15;
+    letter-spacing:-.01em;
+    line-height:1.2;
   }
   .hero .leader-count{
-    margin-top:10px;
-    font-size:.95rem;
-    color:#e8e2cf;
+    flex:0 0 auto;
+    text-align:center;
+    line-height:1.1;
   }
   .hero .leader-count b{
-    font-size:1.35rem;
+    display:block;
+    font-size:1.5rem;
     color:var(--gold);
-    vertical-align:-1px;
   }
-  .hero .prize{
-    margin-top:14px;
-    padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.14);
-    font-size:.78rem;
+  .hero .leader-count span{
+    font-size:.6rem;
     color:#bdb8a8;
+    text-transform:uppercase;
+    letter-spacing:.04em;
   }
 
   /* ---------------- Podium ---------------- */
@@ -177,10 +178,10 @@
   }
   .podium-col{text-align:center;min-width:0;}
   .podium-avatar{
-    width:46px;
-    height:46px;
+    width:38px;
+    height:38px;
     border-radius:50%;
-    margin:0 auto 6px;
+    margin:0 auto 5px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -208,12 +209,12 @@
     color:#fff;
     font-weight:800;
   }
-  .podium-block .medal{font-size:1.1rem;line-height:1;}
-  .podium-block .count{font-size:1.45rem;line-height:1.05;margin-top:3px;}
-  .podium-block .count small{font-size:.58rem;font-weight:600;opacity:.9;display:block;line-height:1.1;margin-top:1px;}
-  .p1 .podium-block{height:116px;background:linear-gradient(180deg,#e8bd3d,#c99512);}
-  .p2 .podium-block{height:98px;background:linear-gradient(180deg,#b6bec6,#8e979f);}
-  .p3 .podium-block{height:86px;background:linear-gradient(180deg,#d08a52,#ab6630);}
+  .podium-block .medal{font-size:.95rem;line-height:1;}
+  .podium-block .count{font-size:1.2rem;line-height:1.05;margin-top:2px;}
+  .podium-block .count small{font-size:.52rem;font-weight:600;opacity:.9;display:block;line-height:1.1;}
+  .p1 .podium-block{height:84px;background:linear-gradient(180deg,#e8bd3d,#c99512);}
+  .p2 .podium-block{height:70px;background:linear-gradient(180deg,#b6bec6,#8e979f);}
+  .p3 .podium-block{height:60px;background:linear-gradient(180deg,#d08a52,#ab6630);}
   .p1 .podium-avatar{border:3px solid var(--gold);}
   .p2 .podium-avatar{border:3px solid var(--silver);}
   .p3 .podium-avatar{border:3px solid var(--bronze);}
@@ -251,34 +252,6 @@
     font-size:.85rem;
   }
 
-  /* ---------------- Stats ---------------- */
-  .stats{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-  }
-  .stat{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:12px 8px;
-    text-align:center;
-    box-shadow:0 1px 3px rgba(0,0,0,.05);
-  }
-  .stat .num{
-    font-size:1.5rem;
-    font-weight:800;
-    color:var(--brand);
-    line-height:1.1;
-  }
-  .stat .lbl{
-    font-size:.7rem;
-    color:var(--muted);
-    margin-top:2px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
 
   button{
     font-family:inherit;
@@ -390,7 +363,7 @@
     margin-bottom:10px;
   }
   .section-title{
-    margin:22px 4px 12px;
+    margin:16px 4px 10px;
     font-size:1.1rem;
     font-weight:800;
     color:var(--ink);
@@ -420,9 +393,7 @@
 
   <div id="heroWrap"></div>
 
-  <div class="stats" id="statsRow"></div>
-
-  <div class="card" style="margin-top:16px;">
+  <div class="card">
     <span class="season-badge" id="standSeasonBadge"></span>
     <h2>🏆 Stand</h2>
     <div class="podium" id="podium"></div>
@@ -550,26 +521,15 @@ import { firebaseConfig } from "./firebase-config.js";
     wrap.innerHTML =
       '<div class="hero">' +
         '<span class="crown">👑</span>' +
-        '<span class="label">' + label + '</span>' +
-        '<p class="leader-name">' + names + '</p>' +
-        '<div class="leader-count"><b>' + top + '</b> ' + (top === 1 ? "kruisje" : "kruisjes") + '</div>' +
-        '<div class="prize">Speelt om de schoenenbon t.w.v. €100 👟</div>' +
+        '<div class="hero-text">' +
+          '<span class="label">' + label + '</span>' +
+          '<p class="leader-name">' + names + '</p>' +
+        '</div>' +
+        '<div class="leader-count"><b>' + top + '</b>' +
+          '<span>' + (top === 1 ? "kruisje" : "kruisjes") + '</span></div>' +
       '</div>';
   }
 
-  // ---------- Stats ----------
-  function renderStats(){
-    const entries = seasonEntries();
-    const trainingen = entries.filter(e=>e.type !== "wedstrijd").length;
-    const wedstrijden = entries.filter(e=>e.type === "wedstrijd").length;
-    const kruisjes = entries.reduce((sum,e)=> sum + (e.playerIds||[]).length, 0);
-    const row = document.getElementById("statsRow");
-    row.innerHTML =
-      '<div class="stat"><div class="num">' + kruisjes + '</div><div class="lbl">Kruisjes</div></div>' +
-      '<div class="stat"><div class="num">' + trainingen + '</div><div class="lbl">Trainingen</div></div>' +
-      '<div class="stat"><div class="num">' + wedstrijden + '</div><div class="lbl">Wedstrijden</div></div>';
-    row.style.display = entries.length ? "grid" : "none";
-  }
 
   // ---------- Podium + lijst ----------
   const STANDINGS_REST_N = 4;
@@ -689,7 +649,6 @@ import { firebaseConfig } from "./firebase-config.js";
   function renderAll(){
     renderSeasonSelect();
     renderHero();
-    renderStats();
     renderStandings();
     renderFeed();
   }
