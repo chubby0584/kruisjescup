@@ -424,6 +424,37 @@
   }
   .toast.show{opacity:1;}
   .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+  .login-gate{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:28px 24px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+  }
+  .login-logo{height:64px;width:auto;margin-bottom:12px;}
+  .login-card h1{
+    margin:0 0 8px;
+    font-size:1.2rem;
+    color:var(--brand);
+  }
+  .login-card form{text-align:left;}
+  .login-error{
+    color:var(--danger);
+    font-size:.85rem;
+    margin-top:8px;
+  }
   .season-badge{
     display:inline-block;
     background:var(--brand-tint);
@@ -437,6 +468,20 @@
 </style>
 </head>
 <body>
+
+<div class="login-gate" id="loginGate" style="display:none;">
+  <div class="login-card">
+    <img src="icons/club-logo.png" alt="SC Rheden" class="login-logo">
+    <h1>Kruisjescup JO17</h1>
+    <p class="hint">Dit beheerscherm is alleen voor de trainer. Voer je toegangscode in.</p>
+    <form id="loginForm">
+      <label for="loginCode">Toegangscode</label>
+      <input type="password" id="loginCode" autocomplete="current-password" required>
+      <p class="login-error" id="loginError" style="display:none;"></p>
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:16px;">Inloggen</button>
+    </form>
+  </div>
+</div>
 
 <header>
   <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
@@ -520,6 +565,10 @@
   <!-- INSTELLINGEN -->
   <section id="tab-instellingen" class="tabpage">
     <div class="card">
+      <h2>Account</h2>
+      <button class="btn-secondary" id="logoutBtn" style="width:100%;">Uitloggen</button>
+    </div>
+    <div class="card">
       <h2>Back-up</h2>
       <p class="hint">Alle data (spelers, kruisjes, foto's) staat in de cloud (Firebase) en wordt automatisch gesynchroniseerd — ook zonder bereik op het veld; hij synct zodra je weer verbinding hebt. Een export hieronder is een extra, handmatige kopie voor de zekerheid.</p>
       <button class="btn-secondary" id="exportBtn" style="width:100%;margin-top:12px;">⬇️ Exporteer back-up (JSON)</button>
@@ -546,7 +595,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache,
   collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, writeBatch
@@ -602,50 +651,60 @@ import { firebaseConfig } from "./firebase-config.js";
 
   const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
   let db = null;
+  let auth = null;
+  const COACH_EMAIL = "coach@kruisjescup.app";
+  const loginGate = document.getElementById("loginGate");
+  const loginForm = document.getElementById("loginForm");
+  const loginError = document.getElementById("loginError");
 
   if(!configFilledIn){
     setSyncStatus("⚠️ cloud niet ingesteld — zie README.md");
   } else {
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    auth = getAuth(app);
     db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
 
-    // Als inloggen te lang duurt (bijv. vastgelopen opslag in een homescreen-app),
-    // laat dat expliciet zien in plaats van stil te blijven hangen op "verbinden…".
-    const stuckTimer = setTimeout(()=>{
-      setSyncStatus("⚠️ inloggen duurt lang — tik om te verversen");
-    }, 8000);
-
-    // Wacht op een bevestigde login voordat we data ophalen: als de listeners
-    // starten vóór het inloggen klaar is (bijv. bij een "koude" start vanaf
-    // het beginscherm, zonder eerder opgeslagen sessie), wijst Firestore het
-    // verzoek af met "missing or insufficient permissions" én herstelt dat
-    // niet vanzelf zodra je alsnog bent ingelogd.
+    // Dit beheerscherm vereist een echte login (geen anonieme sessie meer): de
+    // Firestore-regels staan schrijven alleen toe met een wachtwoord-login, zodat
+    // spelers/ouders die de publieke dashboard-link gebruiken niets kunnen wijzigen.
     let subscribed = false;
     onAuthStateChanged(auth, user=>{
-      clearTimeout(stuckTimer);
-      if(user && !subscribed){
-        subscribed = true;
+      if(user){
+        loginGate.style.display = "none";
+        if(!subscribed){
+          subscribed = true;
+          setSyncStatus("verbinden met cloud…");
 
-        onSnapshot(collection(db,"players"), snap=>{
-          data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-          updateSyncStatus(snap);
-          renderAllPlayers();
-        }, err=>{ setSyncError("cloudfout", err); });
+          onSnapshot(collection(db,"players"), snap=>{
+            data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+            updateSyncStatus(snap);
+            renderAllPlayers();
+          }, err=>{ setSyncError("cloudfout", err); });
 
-        onSnapshot(collection(db,"entries"), snap=>{
-          data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
-          updateSyncStatus(snap);
-          renderAllEntries();
-        }, err=>{ setSyncError("cloudfout", err); });
-      } else if(!user){
-        setSyncStatus("verbinden met cloud…");
+          onSnapshot(collection(db,"entries"), snap=>{
+            data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+            updateSyncStatus(snap);
+            renderAllEntries();
+          }, err=>{ setSyncError("cloudfout", err); });
+        }
+      } else {
+        loginGate.style.display = "flex";
+        setSyncStatus("niet ingelogd");
       }
     });
 
-    signInAnonymously(auth).catch(err=>{
-      clearTimeout(stuckTimer);
-      setSyncError("kon niet inloggen", err);
+    loginForm.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      loginError.style.display = "none";
+      const code = document.getElementById("loginCode").value;
+      const submitBtn = loginForm.querySelector("button");
+      submitBtn.disabled = true;
+      signInWithEmailAndPassword(auth, COACH_EMAIL, code)
+        .catch(()=>{
+          loginError.textContent = "Onjuiste toegangscode, probeer het nog eens.";
+          loginError.style.display = "block";
+        })
+        .finally(()=>{ submitBtn.disabled = false; });
     });
   }
 
@@ -1045,6 +1104,11 @@ import { firebaseConfig } from "./firebase-config.js";
       toast("Toevoegen mislukt: " + err.message);
     }
   }
+
+  // ---------- Account ----------
+  document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    if(auth) signOut(auth);
+  });
 
   // ---------- Export / Import ----------
   document.getElementById("exportBtn").addEventListener("click", ()=>{

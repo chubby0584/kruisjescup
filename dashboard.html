@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Kruisjescup JO17 — Dashboard</title>
+<meta name="theme-color" content="#ba2017">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root{
+    --brand:#ba2017;
+    --brand-tint:#fbe6e4;
+    --ink:#1d1d1b;
+    --bg:#f4f6f4;
+    --card:#ffffff;
+    --border:#dfe3df;
+    --text:#1a1a1a;
+    --muted:#6b6f6b;
+    --gold:#c9a227;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:var(--brand);
+    color:#fff;
+    padding:16px 16px 12px;
+    position:sticky;
+    top:0;
+    z-index:10;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+    border-bottom:5px solid var(--ink);
+  }
+  header h1{
+    margin:0;
+    font-size:1.25rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  header h1 .club-logo{height:34px;width:auto;display:block;}
+  header .subtitle{margin:2px 0 0;font-size:.8rem;opacity:.9;}
+  header .season-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:.85rem;
+  }
+  header select{
+    background:rgba(255,255,255,.15);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.4);
+    border-radius:6px;
+    padding:4px 8px;
+    font-size:.85rem;
+  }
+  header select option{color:#000;}
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    margin:0 0 12px;
+    font-size:1.05rem;
+    color:var(--brand);
+  }
+  .standings{list-style:none;margin:0;padding:0;}
+  .standings li{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px;
+    border-bottom:1px solid var(--border);
+  }
+  .standings li:last-child{border-bottom:none;}
+  .standings .rank{width:26px;font-weight:700;color:var(--muted);}
+  .standings li:first-child .rank{color:var(--gold);}
+  .standings .name{flex:1;font-weight:600;}
+  .standings .score{
+    font-weight:700;
+    color:var(--brand);
+    background:var(--brand-tint);
+    border-radius:12px;
+    padding:2px 10px;
+    font-size:.9rem;
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:1rem;
+    font-weight:600;
+  }
+  .btn-secondary{background:#eceeec;color:var(--text);}
+  .empty{color:var(--muted);font-size:.9rem;text-align:center;padding:20px 0;}
+  .history-item{border-bottom:1px solid var(--border);padding:12px 0;}
+  .history-item:last-child{border-bottom:none;}
+  .history-item .date{font-weight:700;color:var(--brand);}
+  .history-item .winners{margin-top:4px;font-size:.95rem;}
+  .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
+  .history-item img{
+    margin-top:8px;
+    max-width:100%;
+    max-height:280px;
+    border-radius:8px;
+    display:block;
+  }
+  .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+  .season-badge{
+    display:inline-block;
+    background:var(--brand-tint);
+    color:var(--brand);
+    border-radius:12px;
+    padding:2px 10px;
+    font-size:.8rem;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:.75rem;
+    padding:8px 16px 32px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
+  <p class="subtitle">Voor spelers &amp; ouders — alleen om te bekijken</p>
+  <div class="season-row">
+    <span>Seizoen</span>
+    <select id="seasonSelect"></select>
+  </div>
+</header>
+
+<main>
+
+  <div class="card">
+    <span class="season-badge" id="standSeasonBadge"></span>
+    <h2>🏆 Stand</h2>
+    <ul class="standings" id="standingsList"></ul>
+    <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
+    <button class="btn-secondary" id="standingsToggleBtn" style="width:100%;margin-top:12px;display:none;"></button>
+  </div>
+
+  <div class="card">
+    <span class="season-badge" id="feedSeasonBadge"></span>
+    <h2>📸 Trainingen</h2>
+    <div id="feedList"></div>
+    <p class="empty" id="feedEmpty" style="display:none;">Nog geen trainingen geregistreerd.</p>
+    <button class="btn-secondary" id="feedMoreBtn" style="width:100%;margin-top:12px;display:none;">Meer laden</button>
+  </div>
+
+</main>
+
+<footer>Kruisjescup JO17 · SC Rheden</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+(function(){
+  "use strict";
+
+  function fromIso(s){ return new Date(s + "T00:00:00"); }
+  function seasonForDate(iso){
+    const date = fromIso(iso);
+    const y = date.getFullYear();
+    const m = date.getMonth();
+    return m >= 6 ? (y + "/" + (y+1)) : ((y-1) + "/" + y);
+  }
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  let data = { players: [], entries: [] };
+  let activeSeason = seasonForDate(
+    (()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })()
+  );
+
+  const seasonSelect = document.getElementById("seasonSelect");
+  function allSeasons(){
+    const set = new Set(data.entries.map(e=>e.season));
+    set.add(activeSeason);
+    return Array.from(set).sort().reverse();
+  }
+  function renderSeasonSelect(){
+    const seasons = allSeasons();
+    seasonSelect.innerHTML = "";
+    seasons.forEach(s=>{
+      const opt = document.createElement("option");
+      opt.value = s; opt.textContent = s;
+      if(s === activeSeason) opt.selected = true;
+      seasonSelect.appendChild(opt);
+    });
+    document.getElementById("standSeasonBadge").textContent = "Seizoen " + activeSeason;
+    document.getElementById("feedSeasonBadge").textContent = "Seizoen " + activeSeason;
+  }
+  seasonSelect.addEventListener("change", ()=>{
+    activeSeason = seasonSelect.value;
+    standingsExpanded = false;
+    feedVisibleCount = FEED_PAGE_SIZE;
+    renderSeasonSelect();
+    renderStandings();
+    renderFeed();
+  });
+
+  function playerName(id){
+    const p = data.players.find(p=>p.id===id);
+    return p ? p.name : "(verwijderde speler)";
+  }
+  function seasonCounts(season){
+    const counts = {};
+    data.entries.filter(e=>e.season===season).forEach(e=>{
+      e.playerIds.forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
+    });
+    return counts;
+  }
+
+  const STANDINGS_TOP_N = 4;
+  let standingsExpanded = false;
+  const standingsToggleBtn = document.getElementById("standingsToggleBtn");
+  standingsToggleBtn.addEventListener("click", ()=>{
+    standingsExpanded = !standingsExpanded;
+    renderStandings();
+  });
+
+  function renderStandings(){
+    const counts = seasonCounts(activeSeason);
+    const rows = data.players
+      .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
+      .filter(r => r.count > 0)
+      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+
+    const showAll = standingsExpanded || rows.length <= STANDINGS_TOP_N;
+    const visibleRows = showAll ? rows : rows.slice(0, STANDINGS_TOP_N);
+
+    const list = document.getElementById("standingsList");
+    list.innerHTML = "";
+    document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
+    visibleRows.forEach((r,i)=>{
+      const li = document.createElement("li");
+      const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
+      li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+escapeHtml(r.name)+'</span><span class="score">'+r.count+'</span>';
+      list.appendChild(li);
+    });
+
+    if(rows.length > STANDINGS_TOP_N){
+      standingsToggleBtn.style.display = "block";
+      standingsToggleBtn.textContent = standingsExpanded ? "Toon minder" : "Bekijk hele lijst (" + rows.length + ")";
+    } else {
+      standingsToggleBtn.style.display = "none";
+    }
+  }
+
+  const FEED_PAGE_SIZE = 6;
+  let feedVisibleCount = FEED_PAGE_SIZE;
+  const feedMoreBtn = document.getElementById("feedMoreBtn");
+  feedMoreBtn.addEventListener("click", ()=>{
+    feedVisibleCount += FEED_PAGE_SIZE;
+    renderFeed();
+  });
+
+  function renderFeed(){
+    const entries = data.entries
+      .filter(e=>e.season===activeSeason)
+      .sort((a,b)=> b.date.localeCompare(a.date));
+    const container = document.getElementById("feedList");
+    container.innerHTML = "";
+    document.getElementById("feedEmpty").style.display = entries.length ? "none" : "block";
+
+    const visible = entries.slice(0, feedVisibleCount);
+    visible.forEach(e=>{
+      const div = document.createElement("div");
+      div.className = "history-item";
+      const winners = e.playerIds.map(playerName).join(", ");
+      const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"short", year:"numeric"});
+      div.innerHTML =
+        '<div class="date">'+dateFormatted+'</div>' +
+        '<div class="winners">🎯 '+escapeHtml(winners)+'</div>' +
+        (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
+        (e.photo ? '<img src="'+e.photo+'" loading="lazy">' : '');
+      container.appendChild(div);
+    });
+
+    feedMoreBtn.style.display = entries.length > feedVisibleCount ? "block" : "none";
+  }
+
+  const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
+  if(configFilledIn){
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    onSnapshot(collection(db,"players"), snap=>{
+      data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      renderSeasonSelect();
+      renderStandings();
+      renderFeed();
+    });
+    onSnapshot(collection(db,"entries"), snap=>{
+      data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+      renderSeasonSelect();
+      renderStandings();
+      renderFeed();
+    });
+  }
+
+  renderSeasonSelect();
+  renderStandings();
+  renderFeed();
+})();
+</script>
+</body>
+</html>
