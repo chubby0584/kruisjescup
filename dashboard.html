@@ -27,7 +27,12 @@
     color:var(--text);
   }
   header{
-    background:var(--brand);
+    background-color:var(--brand);
+    background-image:repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,.07) 0px, rgba(255,255,255,.07) 14px,
+      transparent 14px, transparent 28px
+    );
     color:#fff;
     padding:16px 16px 12px;
     position:sticky;
@@ -83,12 +88,12 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:10px 4px;
+    padding:10px 8px;
     border-bottom:1px solid var(--border);
+    border-radius:8px;
   }
   .standings li:last-child{border-bottom:none;}
-  .standings .rank{width:26px;font-weight:700;color:var(--muted);}
-  .standings li:first-child .rank{color:var(--gold);}
+  .standings .rank{width:30px;font-weight:700;color:var(--muted);font-size:1rem;}
   .standings .name{flex:1;font-weight:600;}
   .standings .score{
     font-weight:700;
@@ -98,6 +103,16 @@
     padding:2px 10px;
     font-size:.9rem;
   }
+  .standings li.rank-1{
+    background:linear-gradient(90deg, #fdf1cf, transparent 85%);
+    border-bottom-color:transparent;
+  }
+  .standings li.rank-1 .rank{font-size:1.5rem;width:32px;}
+  .standings li.rank-1 .name{font-size:1.05rem;}
+  .standings li.rank-2{background:linear-gradient(90deg, #eef0f1, transparent 85%);}
+  .standings li.rank-2 .rank{font-size:1.25rem;}
+  .standings li.rank-3{background:linear-gradient(90deg, #fbe6d4, transparent 85%);}
+  .standings li.rank-3 .rank{font-size:1.15rem;}
   button{
     font-family:inherit;
     cursor:pointer;
@@ -109,16 +124,72 @@
   }
   .btn-secondary{background:#eceeec;color:var(--text);}
   .empty{color:var(--muted);font-size:.9rem;text-align:center;padding:20px 0;}
-  .history-item{border-bottom:1px solid var(--border);padding:12px 0;}
-  .history-item:last-child{border-bottom:none;}
-  .history-item .date{font-weight:700;color:var(--brand);}
-  .history-item .winners{margin-top:4px;font-size:.95rem;}
-  .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
-  .history-item img{
-    margin-top:8px;
+
+  /* ---------- Trainingen tijdlijn ---------- */
+  @keyframes fadeInUp{
+    from{opacity:0; transform:translateY(8px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .timeline{list-style:none;margin:0;padding:0;}
+  .timeline-item{
+    position:relative;
+    padding-left:36px;
+    padding-bottom:22px;
+    animation:fadeInUp .4s ease both;
+  }
+  .timeline-item:last-child{padding-bottom:0;}
+  .timeline-item::before{
+    content:"";
+    position:absolute;
+    left:13px;
+    top:26px;
+    bottom:-22px;
+    width:2px;
+    background:var(--border);
+  }
+  .timeline-item:last-child::before{display:none;}
+  .timeline-dot{
+    position:absolute;
+    left:0;
+    top:0;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--brand);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.85rem;
+    box-shadow:0 0 0 3px var(--card);
+    z-index:1;
+  }
+  .timeline-item .relative-date{font-weight:700;color:var(--brand);}
+  .timeline-item .full-date{
+    display:block;
+    font-size:.75rem;
+    color:var(--muted);
+    font-weight:400;
+    margin-top:1px;
+  }
+  .timeline-item .winners{margin-top:6px;}
+  .winner-badge{
+    display:inline-block;
+    background:var(--brand-tint);
+    color:var(--brand);
+    border-radius:999px;
+    padding:3px 11px;
+    font-size:.85rem;
+    font-weight:600;
+    margin:2px 4px 2px 0;
+  }
+  .timeline-item .note{margin-top:6px;font-size:.85rem;color:var(--muted);font-style:italic;}
+  .timeline-item img{
+    margin-top:10px;
     max-width:100%;
-    max-height:280px;
-    border-radius:8px;
+    max-height:340px;
+    border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.14);
     display:block;
   }
   .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
@@ -191,6 +262,16 @@ import { firebaseConfig } from "./firebase-config.js";
   function escapeHtml(s){
     return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
+  function relativeDate(iso){
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const diffDays = Math.round((today - fromIso(iso)) / 86400000);
+    if(diffDays === 0) return "Vandaag";
+    if(diffDays === 1) return "Gisteren";
+    if(diffDays > 1 && diffDays <= 6) return diffDays + " dagen geleden";
+    if(diffDays < 0) return "Binnenkort";
+    return null;
+  }
 
   let data = { players: [], entries: [] };
   let activeSeason = seasonForDate(
@@ -260,6 +341,7 @@ import { firebaseConfig } from "./firebase-config.js";
     visibleRows.forEach((r,i)=>{
       const li = document.createElement("li");
       const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
+      if(i < 3) li.className = "rank-" + (i+1);
       li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+escapeHtml(r.name)+'</span><span class="score">'+r.count+'</span>';
       list.appendChild(li);
     });
@@ -288,15 +370,23 @@ import { firebaseConfig } from "./firebase-config.js";
     container.innerHTML = "";
     document.getElementById("feedEmpty").style.display = entries.length ? "none" : "block";
 
+    container.className = "timeline";
+
     const visible = entries.slice(0, feedVisibleCount);
-    visible.forEach(e=>{
+    visible.forEach((e,i)=>{
       const div = document.createElement("div");
-      div.className = "history-item";
-      const winners = e.playerIds.map(playerName).join(", ");
+      div.className = "timeline-item";
+      div.style.animationDelay = Math.min(i * 0.05, 0.4) + "s";
+      const badges = e.playerIds.map(id=>'<span class="winner-badge">'+escapeHtml(playerName(id))+'</span>').join("");
       const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"short", year:"numeric"});
+      const rel = relativeDate(e.date);
+      const dot = e.photo ? "📸" : "🎯";
       div.innerHTML =
-        '<div class="date">'+dateFormatted+'</div>' +
-        '<div class="winners">🎯 '+escapeHtml(winners)+'</div>' +
+        '<span class="timeline-dot">'+dot+'</span>' +
+        '<div class="relative-date">' + (rel || dateFormatted) +
+          (rel ? '<span class="full-date">'+dateFormatted+'</span>' : '') +
+        '</div>' +
+        '<div class="winners">'+badges+'</div>' +
         (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
         (e.photo ? '<img src="'+e.photo+'" loading="lazy">' : '');
       container.appendChild(div);
