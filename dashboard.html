@@ -44,17 +44,6 @@
     position:relative;
     overflow:hidden;
   }
-  header::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:repeating-linear-gradient(
-      135deg,
-      rgba(255,255,255,.10) 0px, rgba(255,255,255,.10) 16px,
-      transparent 16px, transparent 32px
-    );
-    pointer-events:none;
-  }
   .header-inner{
     max-width:640px;
     margin:0 auto;
@@ -356,6 +345,14 @@
   .post-date{font-size:.74rem;color:var(--muted);margin-top:1px;}
   .post-body{padding:0 15px 13px;}
   .post-body.no-photo{padding-bottom:15px;}
+  .winners-label{
+    font-size:.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
   .winner-badge{
     display:inline-flex;
     align-items:center;
@@ -428,7 +425,7 @@
 
 <header>
   <div class="header-inner">
-    <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
+    <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">SC Rheden O17-1</h1>
     <div class="subtitle-wrap">
       <p class="subtitle">Wie gaat er dit seizoen met de schoenenbon naar huis? 👟</p>
       <p class="subtitle">Elke training een kans op een kruisje! 🎯</p>
@@ -684,10 +681,13 @@ import { firebaseConfig } from "./firebase-config.js";
         const scoreHtml = e.score ? '<span class="score">' + escapeHtml(e.score) + '</span>' : '';
         bodyHtml = '<div class="match-line">vs ' + opponent + scoreHtml + '</div>';
       } else {
-        bodyHtml = '<div>' + (e.playerIds||[]).map(id=>{
-          const n = playerName(id);
-          return '<span class="winner-badge">' + avatarHtml(n) + escapeHtml(n) + '</span>';
-        }).join("") + '</div>';
+        const ids = e.playerIds || [];
+        const label = ids.length === 1 ? "Winnaar van deze training" : "Winnaars van deze training";
+        bodyHtml = (ids.length ? '<div class="winners-label">' + label + '</div>' : '') +
+          '<div>' + ids.map(id=>{
+            const n = playerName(id);
+            return '<span class="winner-badge">' + avatarHtml(n) + escapeHtml(n) + '</span>';
+          }).join("") + '</div>';
       }
 
       div.innerHTML =
