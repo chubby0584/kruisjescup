@@ -537,10 +537,10 @@
       <label for="gatePass">Wachtwoord</label>
       <input type="password" id="gatePass" autocomplete="current-password" required minlength="6">
 
-      <div class="gate-msg err" id="gateMsg" style="display:none;"></div>
-
       <button type="submit" class="btn-primary" id="gateSubmit">Inloggen</button>
     </form>
+
+    <div class="gate-msg err" id="gateMsg" style="display:none;"></div>
 
     <button class="linkbtn forgot" id="forgotBtn">Wachtwoord vergeten?</button>
 
@@ -917,7 +917,21 @@ import { firebaseConfig } from "./firebase-config.js";
     });
     document.getElementById("forgotBtn").style.display = signup ? "none" : "block";
     setMsg("");
+
+    if(signup && !inviteOk){
+      // Zonder werkende uitnodiging heeft het formulier geen zin.
+      gateForm.style.display = "none";
+      setMsg(inviteFromUrl
+        ? "Deze uitnodigingslink is verlopen of bestaat niet meer. Vraag de trainer om een nieuwe."
+        : "Aanmelden kan alleen via een uitnodigingslink van de trainer.", "err");
+    } else {
+      gateForm.style.display = "block";
+    }
   }
+  // Registreren kan alleen via een geldige uitnodigingslink (?uitnodiging=code).
+  const inviteFromUrl = new URLSearchParams(location.search).get("uitnodiging") || "";
+  let inviteOk = false;
+
   document.getElementById("switchBtn").addEventListener("click", ()=> setMode("signup"));
 
   // Firebase-foutcodes omzetten naar begrijpelijke taal voor ouders.
@@ -966,6 +980,7 @@ import { firebaseConfig } from "./firebase-config.js";
             setDoc(doc(db,"members",cred.user.uid), {
               name: naam,
               email: email,
+              invite: inviteFromUrl,
               createdAt: serverTimestamp(),
               blocked: false
             })
@@ -990,6 +1005,20 @@ import { firebaseConfig } from "./firebase-config.js";
     });
 
     document.getElementById("logoutBtn").addEventListener("click", ()=> signOut(auth));
+
+    // Uitnodiging alvast controleren, zodat iemand niet eerst een heel
+    // formulier invult om daarna te horen dat de link verlopen is. De
+    // Firestore-regels controleren het bij het opslaan nog een keer echt.
+    if(inviteFromUrl){
+      getDoc(doc(db,"invites",inviteFromUrl))
+        .then(snap=>{
+          const exp = snap.exists() && snap.data().expiresAt;
+          const ms = exp && exp.seconds ? exp.seconds*1000 : 0;
+          inviteOk = ms > Date.now();
+        })
+        .catch(()=>{ inviteOk = false; })
+        .finally(()=>{ if(mode === "signup") setMode("signup"); });
+    }
 
     // Firebase onthoudt de sessie zelf, dus wie eenmaal inlogt blijft ingelogd.
     onAuthStateChanged(auth, async user=>{
@@ -1030,7 +1059,8 @@ import { firebaseConfig } from "./firebase-config.js";
       } else {
         gate.style.display = "flex";
         passInput.value = "";
-        setMode("login");
+        // Wie via een uitnodigingslink binnenkomt, wil zich aanmelden.
+        setMode(inviteFromUrl ? "signup" : "login");
       }
     });
   } else {

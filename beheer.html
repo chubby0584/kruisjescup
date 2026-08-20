@@ -381,6 +381,30 @@
     display:block;
   }
   .history-item .actions{margin-top:8px;display:flex;gap:8px;}
+  .invite-actions{display:flex;gap:8px;margin:12px 0 4px;}
+  .invite-actions button{flex:1;font-size:.85rem;padding:10px 8px;}
+  .invite{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+    margin-top:12px;
+    background:#fafbfa;
+  }
+  .invite.expired{opacity:.55;}
+  .invite .url{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.74rem;
+    word-break:break-all;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:7px 8px;
+    margin-bottom:8px;
+  }
+  .invite .meta{font-size:.76rem;color:var(--muted);margin-bottom:8px;}
+  .invite .meta b{color:var(--text);}
+  .invite .row{display:flex;gap:8px;}
+  .invite .row button{flex:1;}
   .member{
     display:flex;
     align-items:flex-start;
@@ -628,8 +652,18 @@
   <!-- INSTELLINGEN -->
   <section id="tab-leden" class="tabpage">
     <div class="card">
+      <h2>Uitnodigingslink</h2>
+      <p class="hint">Een account aanmaken kan alleen via een geldige uitnodigingslink. Maak er een, deel 'm in de teamgroep, en na de gekozen periode werkt hij niet meer. Wie al een account heeft, houdt gewoon toegang.</p>
+      <div class="invite-actions">
+        <button class="btn-secondary" data-invite-days="1">Link voor 1 dag</button>
+        <button class="btn-secondary" data-invite-days="7">Link voor 1 week</button>
+      </div>
+      <div id="inviteList"></div>
+      <p class="empty" id="invitesEmpty" style="display:none;">Nog geen actieve uitnodigingslink.</p>
+    </div>
+    <div class="card">
       <h2>Wie kijken er mee?</h2>
-      <p class="hint">Iedereen met de link naar de teampagina kan zelf een account aanmaken. Hier zie je wie dat gedaan heeft. Vertrouw je iemand niet, blokkeer het account — die persoon kan dan niets meer zien.</p>
+      <p class="hint">Hier zie je iedereen die via een uitnodigingslink een account heeft gemaakt. Vertrouw je iemand niet, blokkeer het account — die persoon kan dan niets meer zien.</p>
       <div id="membersList"></div>
       <p class="empty" id="membersEmpty" style="display:none;">Nog niemand aangemeld.</p>
     </div>
@@ -702,7 +736,7 @@ import { firebaseConfig } from "./firebase-config.js";
   }
 
   // ---------- Firebase (cloud sync) ----------
-  let data = { players: [], entries: [], members: [] };
+  let data = { players: [], entries: [], members: [], invites: [] };
   const syncRow = document.getElementById("syncRow");
 
   function setSyncStatus(text){
@@ -763,7 +797,13 @@ import { firebaseConfig } from "./firebase-config.js";
           onSnapshot(collection(db,"members"), snap=>{
             data.members = snap.docs.map(d=>({ uid:d.id, ...d.data() }));
             renderMembers();
+            renderInvites();
           }, err=>{ console.warn("leden laden mislukt", err); });
+
+          onSnapshot(collection(db,"invites"), snap=>{
+            data.invites = snap.docs.map(d=>({ code:d.id, ...d.data() }));
+            renderInvites();
+          }, err=>{ console.warn("uitnodigingen laden mislukt", err); });
         }
       } else {
         loginGate.style.display = "flex";
@@ -810,7 +850,7 @@ import { firebaseConfig } from "./firebase-config.js";
       document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
       if(btn.dataset.tab === "geschiedenis") renderHistory();
       if(btn.dataset.tab === "spelers") renderRoster();
-      if(btn.dataset.tab === "leden") renderMembers();
+      if(btn.dataset.tab === "leden"){ renderMembers(); renderInvites(); }
     });
   });
 
@@ -1161,6 +1201,98 @@ import { firebaseConfig } from "./firebase-config.js";
   }
 
   // ---------- Roster ----------
+  // ---------- Uitnodigingslinks ----------
+  function inviteCode(){
+    // 16 tekens uit een alfabet zonder verwarrende tekens (0/O, 1/l).
+    const alfabet = "abcdefghijkmnpqrstuvwxyz23456789";
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => alfabet[b % alfabet.length]).join("");
+  }
+  function inviteUrl(code){
+    const base = location.origin + location.pathname.replace(/beheer\.html$/, "");
+    return base + "o17-1.html?uitnodiging=" + code;
+  }
+
+  document.querySelectorAll("[data-invite-days]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      if(!db) return;
+      const dagen = parseInt(btn.dataset.inviteDays, 10);
+      const code = inviteCode();
+      try{
+        await setDoc(doc(db,"invites",code), {
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + dagen*24*60*60*1000),
+          days: dagen
+        });
+        toast("Link gemaakt — kopieer 'm hieronder");
+      }catch(err){
+        toast("Aanmaken mislukt: " + err.message);
+      }
+    });
+  });
+
+  function renderInvites(){
+    const container = document.getElementById("inviteList");
+    if(!container) return;
+    const now = Date.now();
+    const rows = data.invites.slice().sort((a,b)=>{
+      const ta = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+      const tb = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+      return tb - ta;
+    });
+    document.getElementById("invitesEmpty").style.display = rows.length ? "none" : "block";
+
+    container.innerHTML = rows.map(inv=>{
+      const exp = inv.expiresAt && inv.expiresAt.seconds ? inv.expiresAt.seconds*1000 : 0;
+      const verlopen = exp <= now;
+      const gebruikt = data.members.filter(m=>m.invite === inv.code).length;
+      let wanneer;
+      if(verlopen){
+        wanneer = "verlopen";
+      } else {
+        const uren = Math.round((exp - now) / 3600000);
+        wanneer = uren < 24
+          ? "verloopt over " + uren + " uur"
+          : "verloopt over " + Math.round(uren/24) + " dagen";
+      }
+      return '<div class="invite' + (verlopen ? " expired" : "") + '">' +
+        '<div class="url">' + escapeHtml(inviteUrl(inv.code)) + '</div>' +
+        '<div class="meta"><b>' + wanneer + '</b> · ' + gebruikt +
+          (gebruikt === 1 ? " aanmelding" : " aanmeldingen") + '</div>' +
+        '<div class="row">' +
+          (verlopen ? '' : '<button class="btn-secondary btn-small" data-copy="' + escapeHtml(inv.code) + '">Kopieer link</button>') +
+          '<button class="btn-danger btn-small" data-revoke="' + escapeHtml(inv.code) + '">Verwijderen</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    container.querySelectorAll("[data-copy]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const url = inviteUrl(btn.dataset.copy);
+        try{
+          await navigator.clipboard.writeText(url);
+          toast("Link gekopieerd ✔️");
+        }catch(err){
+          // Clipboard kan geweigerd worden; selecteren mag de gebruiker dan zelf.
+          toast("Kopiëren lukt niet — selecteer de link hierboven");
+        }
+      });
+    });
+    container.querySelectorAll("[data-revoke]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        if(!db) return;
+        if(!confirm("Deze uitnodigingslink verwijderen? Wie 'm nog niet gebruikt heeft, kan zich niet meer aanmelden.")) return;
+        try{
+          await deleteDoc(doc(db,"invites",btn.dataset.revoke));
+          toast("Link verwijderd");
+        }catch(err){
+          toast("Mislukt: " + err.message);
+        }
+      });
+    });
+  }
+
   // ---------- Leden (ouders/spelers met een account) ----------
   function renderMembers(){
     const container = document.getElementById("membersList");
@@ -1381,6 +1513,7 @@ import { firebaseConfig } from "./firebase-config.js";
   renderHistory();
   renderRoster();
   renderMembers();
+  renderInvites();
 })();
 </script>
 </body>

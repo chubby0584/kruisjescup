@@ -16,7 +16,7 @@ je nooit meer iets kwijt, ook niet als je telefoon stuk gaat of kwijtraakt.
 | URL | Bestand | Wat |
 |---|---|---|
 | `jeugdscrheden.nl` | `index.html` | Portaal: clublogo met een knop per team. Hier komen later meer teams bij. |
-| `jeugdscrheden.nl/o17-1.html` | `o17-1.html` | Teampagina voor spelers en ouders: stand + tijdlijn van trainingen en wedstrijden met foto's. Achter een eigen login (zelf een account aanmaken); alleen om te bekijken. |
+| `jeugdscrheden.nl/o17-1.html` | `o17-1.html` | Teampagina voor spelers en ouders: stand + tijdlijn van trainingen en wedstrijden met foto's. Achter een login; aanmelden kan alleen via een uitnodigingslink van de trainer. Alleen om te bekijken. |
 | `jeugdscrheden.nl/beheer.html` | `beheer.html` | Beheerscherm voor de trainer, achter een toegangscode. |
 
 ### Een team toevoegen
@@ -46,8 +46,9 @@ Open `beheer.html` in de browser en log in met de toegangscode. Tabs onderin:
 - **Geschiedenis** — overzicht van alles wat is vastgelegd, te verwijderen
   bij een fout.
 - **Spelers** — spelerslijst beheren.
-- **Leden** — wie er een account heeft op de teampagina, met de mogelijkheid
-  om iemand te blokkeren.
+- **Leden** — uitnodigingslinks maken (1 dag of 1 week) en intrekken, plus
+  het overzicht van wie er een account heeft, met de mogelijkheid om iemand
+  te blokkeren.
 - **Meer** — uitloggen, extra handmatige back-up (JSON) exporteren/importeren
   en alles wissen.
 
@@ -58,9 +59,9 @@ seizoenkiezer bovenin. Bovenin zie je ook de sync-status
 
 ## Gebruik (teampagina, `o17-1.html`)
 
-Deel deze link met spelers/ouders (bijv. via de teamapp/WhatsApp). Ze maken
-eenmalig zelf een account aan (naam, e-mail, wachtwoord) en blijven daarna
-ingelogd. De pagina toont de stand van het gekozen seizoen als podium (met
+Spelers en ouders komen hier binnen via een uitnodigingslink uit het
+tabblad **Leden**. Ze maken eenmalig een account aan (naam, e-mail,
+wachtwoord) en blijven daarna ingelogd. De pagina toont de stand van het gekozen seizoen als podium (met
 een knop voor de hele lijst) en daaronder een tijdlijn van alle trainingen en
 wedstrijden, met winnaar(s), notitie en foto. Alleen om te bekijken.
 
@@ -148,13 +149,23 @@ service cloud.firestore {
              && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.blocked != true;
     }
 
+    // Uitnodigingslinks. De code in de link is het geheim, dus 'get' mag —
+    // je moet 'm al kennen. Alleen de trainer maakt of verwijdert ze.
+    match /invites/{code} {
+      allow get:   if true;
+      allow list, create, update, delete: if isCoach();
+    }
+
     // Lidprofiel: je maakt bij registratie je eigen profiel aan. Alleen de
     // trainer kan blokkeren, wijzigen of verwijderen — en alleen de trainer
     // kan de hele ledenlijst opvragen.
     match /members/{uid} {
+      // Aanmelden kan alleen met een uitnodiging die nog niet verlopen is.
       allow create: if request.auth != null
                     && request.auth.uid == uid
-                    && request.resource.data.blocked == false;
+                    && request.resource.data.blocked == false
+                    && exists(/databases/$(database)/documents/invites/$(request.resource.data.invite))
+                    && get(/databases/$(database)/documents/invites/$(request.resource.data.invite)).data.expiresAt > request.time;
       allow get:    if isCoach() || (request.auth != null && request.auth.uid == uid);
       allow list:   if isCoach();
       allow update, delete: if isCoach();
@@ -180,17 +191,36 @@ zowel deze regel als `COACH_UID` in `o17-1.html` aan.
 
 ## Accounts voor ouders en spelers
 
-De teampagina zit achter een login. Ouders/spelers maken zelf een account
-aan met naam, e-mailadres en wachtwoord; er is geen uitnodigingscode.
+De teampagina zit achter een login. Aanmelden kan alleen via een
+**uitnodigingslink met een houdbaarheidsdatum**.
+
+In het beheerscherm, tabblad **Leden**, maak je met één tik een link voor
+**1 dag** of **1 week**. Die ziet er zo uit:
+
+```
+https://jeugdscrheden.nl/o17-1.html?uitnodiging=<code>
+```
+
+Deel 'm in de teamgroep. Iedereen die 'm binnen die periode opent, kan een
+account aanmaken met naam, e-mailadres en wachtwoord, en blijft daarna
+ingelogd. Is de link verlopen, dan krijgt een nieuwe bezoeker netjes te zien
+dat hij bij jou een nieuwe moet vragen — bestaande accounts blijven gewoon
+werken. Je kunt een link ook eerder intrekken met **Verwijderen**.
+
+De vervaldatum wordt afgedwongen in de Firestore-regels, niet in de website.
+Aan de link sleutelen of hem later opnieuw proberen helpt dus niet.
 
 **Wat dit wel en niet oplost.** Het houdt zoekmachines en willekeurige
-voorbijgangers buiten de deur — foto's van de spelers zijn niet meer publiek
-opvraagbaar. Het is géén echte toegangscontrole: iedereen die de link
-doorgestuurd krijgt, kan een account aanmaken. De bescherming zit in het
-meekijken achteraf.
+voorbijgangers buiten de deur — foto's van de spelers zijn niet publiek
+opvraagbaar — en een oude link die nog ergens in een groepsapp staat, is na
+afloop waardeloos. Wat het niet tegenhoudt: iemand die de link binnen de
+looptijd doorstuurt naar een buitenstaander. Daarvoor is het overzicht
+hieronder.
 
-In het beheerscherm staat daarom het tabblad **Leden**: daar zie je van elk
-account de naam, het e-mailadres en de aanmelddatum, nieuwste bovenaan.
+Onder de uitnodigingslinks staat daarom het ledenoverzicht: van elk account
+de naam, het e-mailadres en de aanmelddatum, nieuwste bovenaan. Bij elke link
+zie je bovendien hoeveel mensen zich ermee hebben aangemeld — springt dat
+aantal onverwacht omhoog, dan is de link verder verspreid dan bedoeld.
 Klopt iets niet, dan blokkeer je het account met één tik — die persoon ziet
 dan niets meer. Blokkeren is beter dan verwijderen: een verwijderd profiel
 kan opnieuw worden aangemaakt, een geblokkeerd profiel niet. Iemand kan zich
