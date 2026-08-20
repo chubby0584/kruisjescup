@@ -67,8 +67,8 @@ gekozen seizoen als podium (met een knop voor de hele lijst) en daaronder
 een tijdlijn van alle trainingen en wedstrijden, met winnaar(s), notitie en
 foto.
 
-Onder elke training/wedstrijd staat een rij met zes vaste emoji's
-(👍 ❤️ 😂 😮 👏 🔥). Een lid kan er per bericht precies één plaatsen —
+Onder elke training/wedstrijd staat een rij met zeven vaste emoji's
+(⚽ 👍 ❤️ 😂 😮 👏 🔥). Een lid kan er per bericht precies één plaatsen —
 nogmaals tikken haalt 'm weer weg, een andere kiezen vervangt de vorige.
 Er is bewust geen tekstveld: geen los rondslingerend commentaar om te
 modereren, alleen een korte, veilige manier om te laten weten dat iemand het
@@ -200,7 +200,7 @@ service cloud.firestore {
                      && request.auth.uid == uid
                      && (isCoach() || isActiveMember())
                      && request.resource.data.keys().hasOnly(['emoji'])
-                     && request.resource.data.emoji in ['👍','❤️','😂','😮','👏','🔥'];
+                     && request.resource.data.emoji in ['⚽','👍','❤️','😂','😮','👏','🔥'];
         allow delete: if request.auth != null && request.auth.uid == uid;
       }
     }

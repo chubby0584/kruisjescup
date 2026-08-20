@@ -701,7 +701,7 @@ import { firebaseConfig } from "./firebase-config.js";
   let data = { players: [], entries: [] };
   let db = null;
   let currentUid = null;
-  const EMOJI_SET = ["👍","❤️","😂","😮","👏","🔥"];
+  const EMOJI_SET = ["⚽","👍","❤️","😂","😮","👏","🔥"];
   let reactionUnsubs = [];
   let activeSeason = seasonForDate(
     (()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })()
