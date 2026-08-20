@@ -3,1296 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Kruisjescup JO17</title>
+<title>SC Rheden Jeugd</title>
 <meta name="theme-color" content="#ba2017">
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kruisjescup">
 <style>
   :root{
     --brand:#ba2017;
-    --brand-light:#e9433a;
+    --brand-dark:#8e1811;
     --brand-tint:#fbe6e4;
     --ink:#1d1d1b;
-    --green:#1b5e20;
-    --green-light:#2e7d32;
-    --warn:#d9822b;
-    --warn-tint:#fbeeda;
-    --bg:#f4f6f4;
+    --bg:#f2f4f2;
     --card:#ffffff;
-    --border:#dfe3df;
+    --border:#e2e6e2;
     --text:#1a1a1a;
     --muted:#6b6f6b;
-    --gold:#c9a227;
-    --danger:#c0392b;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
+    min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);
     color:var(--text);
-    padding-bottom:72px;
-  }
-  header{
-    background:var(--brand);
-    color:#fff;
-    padding:16px 16px 12px;
-    position:sticky;
-    top:0;
-    z-index:10;
-    box-shadow:0 2px 6px rgba(0,0,0,.15);
-    border-bottom:5px solid var(--ink);
-  }
-  header h1{
-    margin:0;
-    font-size:1.25rem;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  header h1 .club-logo{
-    height:34px;
-    width:auto;
-    display:block;
-  }
-  header .season-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-top:8px;
-    font-size:.85rem;
-  }
-  header select{
-    background:rgba(255,255,255,.15);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.4);
-    border-radius:6px;
-    padding:4px 8px;
-    font-size:.85rem;
-  }
-  header select option{color:#000;}
-  header .sync-row{
-    margin-top:4px;
-    font-size:.72rem;
-    opacity:.85;
-    display:flex;
-    align-items:center;
-    gap:4px;
-  }
-  main{
-    max-width:640px;
-    margin:0 auto;
-    padding:16px;
-  }
-  .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:16px;
-    margin-bottom:16px;
-  }
-  .card h2{
-    margin:0 0 12px;
-    font-size:1.05rem;
-    color:var(--brand);
-  }
-  label{
-    display:block;
-    font-size:.85rem;
-    font-weight:600;
-    margin:12px 0 4px;
-    color:var(--muted);
-  }
-  input[type=date],input[type=text],textarea{
-    width:100%;
-    padding:10px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    font-size:1rem;
-    background:#fff;
-    color:var(--text);
-  }
-  textarea{resize:vertical;min-height:44px;}
-
-  /* ---------- Standings ---------- */
-  .standings{
-    list-style:none;
-    margin:0;
-    padding:0;
-  }
-  .standings li{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:10px 4px;
-    border-bottom:1px solid var(--border);
-  }
-  .standings li:last-child{border-bottom:none;}
-  .standings .rank{
-    width:26px;
-    font-weight:700;
-    color:var(--muted);
-  }
-  .standings li:first-child .rank{color:var(--gold);}
-  .standings .name{flex:1;font-weight:600;}
-  .standings .score{
-    font-weight:700;
-    color:var(--brand);
-    background:var(--brand-tint);
-    border-radius:12px;
-    padding:2px 10px;
-    font-size:.9rem;
-  }
-
-  /* ---------- Week calendar ---------- */
-  .week-nav{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:12px;
-  }
-  .week-nav .week-label{
-    font-weight:700;
-    font-size:.95rem;
-    color:var(--text);
-    text-align:center;
-    flex:1;
-  }
-  .week-nav .week-range{
-    display:block;
-    font-weight:400;
-    font-size:.75rem;
-    color:var(--muted);
-  }
-  .week-nav button{
-    background:#eceeec;
-    border:none;
-    border-radius:8px;
-    width:36px;
-    height:36px;
-    font-size:1.1rem;
-    line-height:1;
-    color:var(--text);
-  }
-  .today-btn-row{text-align:center;margin-bottom:12px;}
-  .today-btn-row button{
-    background:none;
-    color:var(--brand);
-    font-size:.8rem;
-    font-weight:600;
-    padding:4px 10px;
-    text-decoration:underline;
-  }
-  .week-grid{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:6px;
-  }
-  .day-cell{
-    border:2px solid var(--border);
-    border-radius:10px;
-    padding:8px 2px;
-    text-align:center;
-    cursor:pointer;
-    background:#fafafa;
-    user-select:none;
-    transition:.15s;
-    position:relative;
-    min-height:64px;
-    min-width:0;
-    overflow:hidden;
     display:flex;
     flex-direction:column;
+  }
+  .hero{
+    background:linear-gradient(160deg, var(--brand) 0%, var(--brand-dark) 100%);
+    border-bottom:5px solid var(--ink);
+    padding:40px 20px 34px;
+    text-align:center;
+    color:#fff;
+  }
+  @keyframes logoPop{
+    0%{transform:scale(.6) rotate(-8deg); opacity:0;}
+    60%{transform:scale(1.08) rotate(3deg); opacity:1;}
+    100%{transform:scale(1) rotate(0deg); opacity:1;}
+  }
+  .hero img{
+    width:132px;
+    max-width:52vw;
+    height:auto;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
+    animation:logoPop .6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .hero h1{
+    margin:16px 0 0;
+    font-size:1.5rem;
+    letter-spacing:-.02em;
+  }
+  .hero p{
+    margin:6px 0 0;
+    font-size:.88rem;
+    opacity:.92;
+  }
+  main{
+    flex:1;
+    width:100%;
+    max-width:460px;
+    margin:0 auto;
+    padding:24px 20px 8px;
+  }
+  h2{
+    font-size:.75rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--muted);
+    margin:0 4px 12px;
+    font-weight:800;
+  }
+  .team-btn{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px 18px;
+    margin-bottom:12px;
+    text-decoration:none;
+    color:var(--text);
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .team-btn:active{transform:scale(.985);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .team-btn .badge{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:var(--brand);
+    color:#fff;
+    display:flex;
     align-items:center;
     justify-content:center;
-    gap:2px;
+    font-weight:800;
+    font-size:1.25rem;
+    flex:0 0 auto;
+    letter-spacing:-.02em;
   }
-  .day-cell .dow{
-    font-size:.68rem;
-    color:var(--muted);
-    font-weight:600;
-    text-transform:uppercase;
-  }
-  .day-cell .dom{
-    font-size:1.05rem;
-    font-weight:700;
-  }
-  .day-cell.today{border-color:var(--brand);}
-  .day-cell.today .dom{color:var(--brand);}
-  .day-cell.training-due{
-    background:var(--warn-tint);
-    border-color:var(--warn);
-  }
-  .day-cell.training-due .dom{color:#96601c;}
-  .day-cell.has-entry{
-    background:#e6f2e7;
-    border-color:var(--green);
-  }
-  .day-cell.selected{
-    border-color:var(--gold);
-    box-shadow:0 0 0 2px rgba(201,162,39,.35);
-  }
-  .day-cell .mark{
-    font-size:.7rem;
-    color:var(--green);
-    font-weight:700;
-    max-width:100%;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .day-cell .mark.warn{color:#96601c;}
-
-  /* ---------- Assignment panel ---------- */
-  .assign-panel{
-    border-top:2px dashed var(--border);
-    margin-top:16px;
-    padding-top:16px;
-  }
-  .assign-panel h3{
-    margin:0 0 4px;
-    font-size:1rem;
-    color:var(--brand);
-  }
-  .assign-panel .sub{
-    font-size:.8rem;
-    color:var(--muted);
-    margin-bottom:10px;
-  }
-  .type-toggle{
-    display:flex;
-    gap:8px;
-    margin-top:8px;
-  }
-  .type-btn{
-    flex:1;
-    background:#fafafa;
-    border:2px solid var(--border);
-    border-radius:10px;
-    padding:10px 6px;
-    font-size:.9rem;
-    color:var(--text);
-  }
-  .type-btn.selected{
-    border-color:var(--brand);
-    background:var(--brand-tint);
-    color:var(--brand);
-    font-weight:700;
-  }
-  .player-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
-    gap:10px;
-    margin-top:8px;
-  }
-  .player-chip{
-    border:2px solid var(--border);
-    border-radius:10px;
-    padding:10px 6px;
-    text-align:center;
-    font-size:.85rem;
-    cursor:pointer;
-    background:#fafafa;
-    user-select:none;
-    transition:.15s;
-  }
-  .player-chip.selected{
-    border-color:var(--green);
-    background:#e6f2e7;
-    color:var(--green);
-    font-weight:700;
-  }
-  .player-chip .cnt{
+  .team-btn .txt{flex:1;min-width:0;}
+  .team-btn .name{
     display:block;
-    font-size:.7rem;
+    font-size:1.15rem;
+    font-weight:800;
+    letter-spacing:-.01em;
+  }
+  .team-btn .sub{
+    display:block;
+    font-size:.82rem;
     color:var(--muted);
     margin-top:2px;
   }
-  .player-chip.selected .cnt{color:var(--green-light);}
-  .photo-preview{
-    margin-top:10px;
-    max-width:100%;
-    max-height:220px;
-    border-radius:8px;
-    display:none;
-    border:1px solid var(--border);
-  }
-  .panel-actions{
-    display:flex;
-    gap:8px;
-    margin-top:16px;
-  }
-  .panel-actions button{flex:1;}
-
-  button{
-    font-family:inherit;
-    cursor:pointer;
-    border:none;
-    border-radius:8px;
-    padding:12px 16px;
-    font-size:1rem;
-    font-weight:600;
-  }
-  .btn-primary{
-    background:var(--brand);
-    color:#fff;
-  }
-  .btn-secondary{
-    background:#eceeec;
-    color:var(--text);
-  }
-  .btn-danger{
-    background:#fdeceb;
-    color:var(--danger);
-  }
-  .btn-small{
-    padding:6px 10px;
-    font-size:.8rem;
-  }
-  .empty{
-    color:var(--muted);
-    font-size:.9rem;
-    text-align:center;
-    padding:20px 0;
-  }
-  .history-item{
-    border-bottom:1px solid var(--border);
-    padding:12px 0;
-  }
-  .history-item:last-child{border-bottom:none;}
-  .history-item .row1{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-  }
-  .history-item .date{font-weight:700;color:var(--brand);cursor:pointer;}
-  .history-item .winners{margin-top:4px;font-size:.95rem;}
-  .history-item .note{margin-top:4px;font-size:.85rem;color:var(--muted);font-style:italic;}
-  .history-item img{
-    margin-top:8px;
-    max-width:100%;
-    max-height:200px;
-    border-radius:8px;
-    display:block;
-  }
-  .history-item .actions{margin-top:8px;display:flex;gap:8px;}
-  .roster-item{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:8px 0;
-    border-bottom:1px solid var(--border);
-    gap:8px;
-  }
-  .roster-item:last-child{border-bottom:none;}
-  .roster-item input[type=text]{flex:1;}
-  .add-player-row{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-  }
-  .add-player-row input{flex:1;}
-  nav.tabs{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    display:flex;
-    background:#fff;
-    border-top:1px solid var(--border);
-    box-shadow:0 -2px 6px rgba(0,0,0,.08);
-    z-index:10;
-  }
-  nav.tabs button{
-    flex:1;
-    background:none;
-    border-radius:0;
-    padding:10px 4px;
-    font-size:.72rem;
-    color:var(--muted);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:2px;
-    font-weight:500;
-  }
-  nav.tabs button.active{color:var(--brand);font-weight:700;}
-  nav.tabs .icon{font-size:1.2rem;}
-  .tabpage{display:none;}
-  .tabpage.active{display:block;}
-  .toast{
-    position:fixed;
-    bottom:80px;
-    left:50%;
-    transform:translateX(-50%);
-    background:#222;
-    color:#fff;
-    padding:10px 18px;
-    border-radius:20px;
-    font-size:.85rem;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .25s;
-    z-index:20;
-    max-width:90%;
-    text-align:center;
-  }
-  .toast.show{opacity:1;}
-  .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
-  .login-gate{
-    position:fixed;
-    inset:0;
-    background:var(--bg);
-    z-index:100;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-  }
-  .login-card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:28px 24px;
-    max-width:340px;
-    width:100%;
-    text-align:center;
-  }
-  .login-logo{height:64px;width:auto;margin-bottom:12px;}
-  .login-card h1{
-    margin:0 0 8px;
-    font-size:1.2rem;
+  .team-btn .chev{
     color:var(--brand);
+    font-size:1.4rem;
+    font-weight:700;
+    flex:0 0 auto;
   }
-  .login-card form{text-align:left;}
-  .login-error{
-    color:var(--danger);
-    font-size:.85rem;
-    margin-top:8px;
+  .soon{
+    text-align:center;
+    color:var(--muted);
+    font-size:.82rem;
+    padding:10px 4px 0;
   }
-  .season-badge{
-    display:inline-block;
-    background:var(--brand-tint);
-    color:var(--brand);
-    border-radius:12px;
-    padding:2px 10px;
-    font-size:.8rem;
-    font-weight:600;
-    margin-bottom:8px;
+  footer{
+    text-align:center;
+    padding:22px 16px 30px;
+    font-size:.75rem;
+    color:var(--muted);
   }
+  footer a{color:var(--muted);}
 </style>
 </head>
 <body>
 
-<div class="login-gate" id="loginGate" style="display:none;">
-  <div class="login-card">
-    <img src="icons/club-logo.png" alt="SC Rheden" class="login-logo">
-    <h1>Kruisjescup JO17</h1>
-    <p class="hint">Dit beheerscherm is alleen voor de trainer. Voer je toegangscode in.</p>
-    <form id="loginForm">
-      <label for="loginCode">Toegangscode</label>
-      <input type="password" id="loginCode" autocomplete="current-password" required>
-      <p class="login-error" id="loginError" style="display:none;"></p>
-      <button type="submit" class="btn-primary" style="width:100%;margin-top:16px;">Inloggen</button>
-    </form>
-  </div>
+<div class="hero">
+  <img src="icons/club-logo.png" alt="SC Rheden">
+  <h1>SC Rheden Jeugd</h1>
+  <p>Standen, trainingen en wedstrijden</p>
 </div>
 
-<header>
-  <h1><img src="icons/club-logo.png" alt="SC Rheden" class="club-logo">Kruisjescup JO17</h1>
-  <div class="season-row">
-    <span id="seasonLabel">Seizoen</span>
-    <select id="seasonSelect"></select>
-  </div>
-  <div class="sync-row" id="syncRow">verbinden met cloud…</div>
-</header>
-
 <main>
+  <h2>Teams</h2>
 
-  <!-- HOME: stand + week kalender -->
-  <section id="tab-home" class="tabpage active">
+  <a class="team-btn" href="o17-1.html">
+    <span class="badge">17</span>
+    <span class="txt">
+      <span class="name">O17-1</span>
+      <span class="sub">Kruisjescup, trainingen &amp; wedstrijden</span>
+    </span>
+    <span class="chev">›</span>
+  </a>
 
-    <div class="card">
-      <span class="season-badge" id="standSeasonBadge"></span>
-      <h2>🏆 Stand</h2>
-      <ul class="standings" id="standingsList"></ul>
-      <p class="empty" id="standingsEmpty" style="display:none;">Nog geen kruisjes dit seizoen.</p>
-      <button class="btn-secondary" id="standingsToggleBtn" style="width:100%;margin-top:12px;display:none;"></button>
-    </div>
-
-    <div class="card">
-      <h2>Week</h2>
-      <div class="week-nav">
-        <button id="prevWeekBtn" aria-label="Vorige week">‹</button>
-        <span class="week-label" id="weekLabel"></span>
-        <button id="nextWeekBtn" aria-label="Volgende week">›</button>
-      </div>
-      <div class="today-btn-row">
-        <button id="todayBtn">Naar huidige week</button>
-      </div>
-      <div class="week-grid" id="weekGrid"></div>
-
-      <div class="assign-panel" id="assignPanel" style="display:none;">
-        <h3 id="assignDateTitle"></h3>
-
-        <div id="entryTypeRow" style="display:none;">
-          <label>Type</label>
-          <div class="type-toggle">
-            <button type="button" class="type-btn" data-type="training">🏃 Training</button>
-            <button type="button" class="type-btn" data-type="wedstrijd">⚽ Wedstrijd</button>
-          </div>
-        </div>
-
-        <div id="trainingFields">
-          <p class="sub">Tik de speler(s) aan die de eindpartij die dag hebben gewonnen.</p>
-          <div class="player-grid" id="pickGrid"></div>
-          <p class="empty" id="noPlayersHint" style="display:none;">Nog geen spelers. Voeg ze eerst toe bij "Spelers".</p>
-        </div>
-
-        <div id="wedstrijdFields" style="display:none;">
-          <p class="sub">Registreer de wedstrijd — hier is geen kruisje aan gekoppeld.</p>
-          <label for="opponent">Tegenstander</label>
-          <input type="text" id="opponent" placeholder="bijv. Ajax JO17">
-          <label for="score">Uitslag</label>
-          <input type="text" id="score" placeholder="bijv. 3-1">
-        </div>
-
-        <label for="note">Notitie (optioneel)</label>
-        <textarea id="note" placeholder="Vertel er kort iets leuks bij…"></textarea>
-
-        <label>Foto (optioneel)</label>
-        <input type="file" id="photoInput" accept="image/*">
-        <img id="photoPreview" class="photo-preview">
-
-        <div class="panel-actions">
-          <button class="btn-secondary" id="closePanelBtn">Sluiten</button>
-          <button class="btn-primary" id="saveBtn">Opslaan</button>
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- GESCHIEDENIS -->
-  <section id="tab-geschiedenis" class="tabpage">
-    <div class="card">
-      <span class="season-badge" id="histSeasonBadge"></span>
-      <h2>Geschiedenis</h2>
-      <div id="historyList"></div>
-      <p class="empty" id="historyEmpty" style="display:none;">Nog geen kruisjes geregistreerd.</p>
-    </div>
-  </section>
-
-  <!-- SPELERS -->
-  <section id="tab-spelers" class="tabpage">
-    <div class="card">
-      <h2>Spelerslijst</h2>
-      <div id="rosterList"></div>
-      <div class="add-player-row">
-        <input type="text" id="newPlayerName" placeholder="Naam nieuwe speler">
-        <button class="btn-secondary" id="addPlayerBtn">Toevoegen</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- INSTELLINGEN -->
-  <section id="tab-instellingen" class="tabpage">
-    <div class="card">
-      <h2>Account</h2>
-      <button class="btn-secondary" id="logoutBtn" style="width:100%;">Uitloggen</button>
-    </div>
-    <div class="card">
-      <h2>Back-up</h2>
-      <p class="hint">Alle data (spelers, kruisjes, foto's) staat in de cloud (Firebase) en wordt automatisch gesynchroniseerd — ook zonder bereik op het veld; hij synct zodra je weer verbinding hebt. Een export hieronder is een extra, handmatige kopie voor de zekerheid.</p>
-      <button class="btn-secondary" id="exportBtn" style="width:100%;margin-top:12px;">⬇️ Exporteer back-up (JSON)</button>
-      <label for="importInput" style="margin-top:16px;">Importeer back-up</label>
-      <input type="file" id="importInput" accept="application/json">
-      <p class="hint">Let op: importeren vervangt alle huidige cloud-data.</p>
-    </div>
-    <div class="card">
-      <h2>Gevarenzone</h2>
-      <button class="btn-danger" id="resetBtn" style="width:100%;">Alles wissen</button>
-    </div>
-  </section>
-
+  <p class="soon">Meer teams volgen later.</p>
 </main>
 
-<nav class="tabs">
-  <button data-tab="home" class="active"><span class="icon">🏠</span>Home</button>
-  <button data-tab="geschiedenis"><span class="icon">📖</span>Geschiedenis</button>
-  <button data-tab="spelers"><span class="icon">👥</span>Spelers</button>
-  <button data-tab="instellingen"><span class="icon">⚙️</span>Meer</button>
-</nav>
+<footer>
+  SC Rheden · <a href="beheer.html">Trainer</a>
+</footer>
 
-<div class="toast" id="toast"></div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  initializeFirestore, persistentLocalCache,
-  collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, writeBatch
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { firebaseConfig } from "./firebase-config.js";
-
-(function(){
-  "use strict";
-  const DOW = ["Ma","Di","Wo","Do","Vr","Za","Zo"];
-
-  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-
-  function pad2(n){ return String(n).padStart(2,"0"); }
-  function toIso(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
-  function fromIso(s){ return new Date(s + "T00:00:00"); }
-
-  function seasonForDate(iso){
-    const date = fromIso(iso);
-    const y = date.getFullYear();
-    const m = date.getMonth(); // 0-11, August = 7
-    return m >= 6 ? (y + "/" + (y+1)) : ((y-1) + "/" + y);
-  }
-
-  function startOfWeek(d){
-    const date = new Date(d);
-    date.setHours(0,0,0,0);
-    const day = date.getDay(); // 0=Sun..6=Sat
-    const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
-    date.setDate(date.getDate() + diff);
-    return date;
-  }
-
-  // ---------- Firebase (cloud sync) ----------
-  let data = { players: [], entries: [] };
-  const syncRow = document.getElementById("syncRow");
-
-  function setSyncStatus(text){
-    if(syncRow) syncRow.textContent = text;
-  }
-  function setSyncError(prefix, err){
-    setSyncStatus("⚠️ " + prefix + ": " + (err && err.code ? err.code + " — " : "") + (err ? err.message : "onbekende fout") + " (tik om te verversen)");
-  }
-  function updateSyncStatus(snap){
-    setSyncStatus(snap.metadata.fromCache ? "📴 offline — wordt gesynchroniseerd zodra je weer online bent" : "☁️ gesynchroniseerd");
-  }
-  // Tik op de statusregel om de pagina met een schone cache te herladen.
-  if(syncRow){
-    syncRow.style.cursor = "pointer";
-    syncRow.addEventListener("click", ()=>{
-      location.href = location.pathname + "?nocache=" + Date.now();
-    });
-  }
-
-  const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
-  let db = null;
-  let auth = null;
-  const COACH_EMAIL = "coach@kruisjescup.app";
-  const loginGate = document.getElementById("loginGate");
-  const loginForm = document.getElementById("loginForm");
-  const loginError = document.getElementById("loginError");
-
-  if(!configFilledIn){
-    setSyncStatus("⚠️ cloud niet ingesteld — zie README.md");
-  } else {
-    const app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
-
-    // Dit beheerscherm vereist een echte login (geen anonieme sessie meer): de
-    // Firestore-regels staan schrijven alleen toe met een wachtwoord-login, zodat
-    // spelers/ouders die de publieke dashboard-link gebruiken niets kunnen wijzigen.
-    let subscribed = false;
-    onAuthStateChanged(auth, user=>{
-      if(user){
-        loginGate.style.display = "none";
-        if(!subscribed){
-          subscribed = true;
-          setSyncStatus("verbinden met cloud…");
-
-          onSnapshot(collection(db,"players"), snap=>{
-            data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-            updateSyncStatus(snap);
-            renderAllPlayers();
-          }, err=>{ setSyncError("cloudfout", err); });
-
-          onSnapshot(collection(db,"entries"), snap=>{
-            data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
-            updateSyncStatus(snap);
-            renderAllEntries();
-          }, err=>{ setSyncError("cloudfout", err); });
-        }
-      } else {
-        loginGate.style.display = "flex";
-        setSyncStatus("niet ingelogd");
-      }
-    });
-
-    loginForm.addEventListener("submit", (e)=>{
-      e.preventDefault();
-      loginError.style.display = "none";
-      const code = document.getElementById("loginCode").value;
-      const submitBtn = loginForm.querySelector("button");
-      submitBtn.disabled = true;
-      signInWithEmailAndPassword(auth, COACH_EMAIL, code)
-        .catch(()=>{
-          loginError.textContent = "Onjuiste toegangscode, probeer het nog eens.";
-          loginError.style.display = "block";
-        })
-        .finally(()=>{ submitBtn.disabled = false; });
-    });
-  }
-
-  let selectedWinners = new Set();
-  let currentPhotoData = null;
-  let currentWeekStart = startOfWeek(new Date());
-  let selectedDate = null; // iso string of day currently open in assign panel
-
-  // ---------- Toast ----------
-  let toastTimer = null;
-  function toast(msg){
-    const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> el.classList.remove("show"), 2200);
-  }
-
-  // ---------- Tabs ----------
-  document.querySelectorAll("nav.tabs button").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
-      document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
-      if(btn.dataset.tab === "geschiedenis") renderHistory();
-      if(btn.dataset.tab === "spelers") renderRoster();
-    });
-  });
-
-  // ---------- Season selector ----------
-  const seasonSelect = document.getElementById("seasonSelect");
-  let activeSeason = seasonForDate(toIso(new Date()));
-
-  function allSeasons(){
-    const set = new Set(data.entries.map(e=>e.season));
-    set.add(activeSeason);
-    return Array.from(set).sort().reverse();
-  }
-
-  function renderSeasonSelect(){
-    const seasons = allSeasons();
-    seasonSelect.innerHTML = "";
-    seasons.forEach(s=>{
-      const opt = document.createElement("option");
-      opt.value = s; opt.textContent = s;
-      if(s === activeSeason) opt.selected = true;
-      seasonSelect.appendChild(opt);
-    });
-    document.getElementById("standSeasonBadge").textContent = "Seizoen " + activeSeason;
-    document.getElementById("histSeasonBadge").textContent = "Seizoen " + activeSeason;
-  }
-  seasonSelect.addEventListener("change", ()=>{
-    activeSeason = seasonSelect.value;
-    standingsExpanded = false;
-    renderSeasonSelect();
-    renderStandings();
-    renderHistory();
-    renderPickGrid();
-  });
-
-  // ---------- Standings ----------
-  function playerName(id){
-    const p = data.players.find(p=>p.id===id);
-    return p ? p.name : "(verwijderde speler)";
-  }
-
-  function seasonCounts(season){
-    const counts = {};
-    data.entries.filter(e=>e.season===season).forEach(e=>{
-      e.playerIds.forEach(pid=>{ counts[pid] = (counts[pid]||0) + 1; });
-    });
-    return counts;
-  }
-
-  const STANDINGS_TOP_N = 4;
-  let standingsExpanded = false;
-  const standingsToggleBtn = document.getElementById("standingsToggleBtn");
-  standingsToggleBtn.addEventListener("click", ()=>{
-    standingsExpanded = !standingsExpanded;
-    renderStandings();
-  });
-
-  function renderStandings(){
-    const counts = seasonCounts(activeSeason);
-    const rows = data.players
-      .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
-      .filter(r => r.count > 0)
-      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
-
-    const showAll = standingsExpanded || rows.length <= STANDINGS_TOP_N;
-    const visibleRows = showAll ? rows : rows.slice(0, STANDINGS_TOP_N);
-
-    const list = document.getElementById("standingsList");
-    list.innerHTML = "";
-    document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
-    visibleRows.forEach((r,i)=>{
-      const li = document.createElement("li");
-      const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
-      li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+r.name+'</span><span class="score">'+r.count+'</span>';
-      list.appendChild(li);
-    });
-
-    if(rows.length > STANDINGS_TOP_N){
-      standingsToggleBtn.style.display = "block";
-      standingsToggleBtn.textContent = standingsExpanded ? "Toon minder" : "Bekijk hele lijst (" + rows.length + ")";
-    } else {
-      standingsToggleBtn.style.display = "none";
-    }
-  }
-
-  // ---------- Week calendar ----------
-  const weekGrid = document.getElementById("weekGrid");
-  const weekLabel = document.getElementById("weekLabel");
-
-  function entryForDate(iso){
-    return data.entries.find(e=>e.date===iso) || null;
-  }
-
-  function weekNumber(d){
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  }
-
-  function renderWeek(){
-    const days = [];
-    for(let i=0;i<7;i++){
-      const d = new Date(currentWeekStart);
-      d.setDate(d.getDate()+i);
-      days.push(d);
-    }
-    const last = days[6];
-    const fmt = (d)=> d.getDate() + " " + d.toLocaleDateString("nl-NL",{month:"short"});
-    weekLabel.innerHTML = "Week " + weekNumber(currentWeekStart) +
-      '<span class="week-range">' + fmt(currentWeekStart) + " – " + fmt(last) + " " + last.getFullYear() + "</span>";
-
-    const todayIso = toIso(new Date());
-    weekGrid.innerHTML = "";
-    days.forEach((d,i)=>{
-      const iso = toIso(d);
-      const entry = entryForDate(iso);
-      // Trainingsdagen zijn standaard dinsdag (i=1) en donderdag (i=3).
-      const isTrainingDow = (i === 1 || i === 3);
-      const trainingDue = isTrainingDow && !entry && iso <= todayIso;
-      const cell = document.createElement("div");
-      let cls = "day-cell";
-      if(iso === todayIso) cls += " today";
-      if(entry) cls += " has-entry";
-      else if(trainingDue) cls += " training-due";
-      if(iso === selectedDate) cls += " selected";
-      cell.className = cls;
-      let markHtml = "";
-      if(entry && entry.type === "wedstrijd"){
-        const label = entry.opponent ? ("vs " + entry.opponent) : "Wedstrijd";
-        markHtml = '<span class="mark">⚽ ' + label + '</span>';
-      } else if(entry){
-        const names = entry.playerIds.map(playerName).join(", ");
-        markHtml = '<span class="mark">✓ ' + names + '</span>';
-      } else if(trainingDue){
-        markHtml = '<span class="mark warn">nog invullen</span>';
-      }
-      cell.innerHTML =
-        '<span class="dow">'+DOW[i]+'</span>' +
-        '<span class="dom">'+d.getDate()+'</span>' +
-        markHtml;
-      cell.addEventListener("click", ()=> openDay(iso));
-      weekGrid.appendChild(cell);
-    });
-  }
-
-  document.getElementById("prevWeekBtn").addEventListener("click", ()=>{
-    currentWeekStart.setDate(currentWeekStart.getDate()-7);
-    renderWeek();
-  });
-  document.getElementById("nextWeekBtn").addEventListener("click", ()=>{
-    currentWeekStart.setDate(currentWeekStart.getDate()+7);
-    renderWeek();
-  });
-  document.getElementById("todayBtn").addEventListener("click", ()=>{
-    currentWeekStart = startOfWeek(new Date());
-    renderWeek();
-  });
-
-  // ---------- Assignment panel ----------
-  const assignPanel = document.getElementById("assignPanel");
-  const pickGrid = document.getElementById("pickGrid");
-  const entryTypeRow = document.getElementById("entryTypeRow");
-  const trainingFields = document.getElementById("trainingFields");
-  const wedstrijdFields = document.getElementById("wedstrijdFields");
-  const opponentInput = document.getElementById("opponent");
-  const scoreInput = document.getElementById("score");
-  let currentEntryType = "training";
-
-  function dowIndex(iso){
-    const jsDay = fromIso(iso).getDay(); // 0=Sun..6=Sat
-    return jsDay === 0 ? 6 : jsDay - 1; // 0=Ma..6=Zo
-  }
-
-  function setEntryType(type){
-    currentEntryType = type;
-    document.querySelectorAll(".type-btn").forEach(btn=>{
-      btn.classList.toggle("selected", btn.dataset.type === type);
-    });
-    trainingFields.style.display = type === "wedstrijd" ? "none" : "block";
-    wedstrijdFields.style.display = type === "wedstrijd" ? "block" : "none";
-  }
-  document.querySelectorAll(".type-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=> setEntryType(btn.dataset.type));
-  });
-
-  function openDay(iso){
-    if(selectedDate === iso){
-      closePanel();
-      return;
-    }
-    selectedDate = iso;
-    const entry = entryForDate(iso);
-    selectedWinners = new Set(entry ? entry.playerIds : []);
-    currentPhotoData = entry ? entry.photo : null;
-    document.getElementById("note").value = entry ? (entry.note||"") : "";
-    opponentInput.value = entry ? (entry.opponent||"") : "";
-    scoreInput.value = entry ? (entry.score||"") : "";
-    const preview = document.getElementById("photoPreview");
-    if(currentPhotoData){ preview.src = currentPhotoData; preview.style.display = "block"; }
-    else { preview.style.display = "none"; }
-    document.getElementById("photoInput").value = "";
-
-    const isSaturday = dowIndex(iso) === 5;
-    entryTypeRow.style.display = isSaturday ? "block" : "none";
-    setEntryType(entry && entry.type === "wedstrijd" ? "wedstrijd" : "training");
-
-    const d = fromIso(iso);
-    document.getElementById("assignDateTitle").textContent =
-      d.toLocaleDateString("nl-NL", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
-
-    assignPanel.style.display = "block";
-    renderPickGrid();
-    renderWeek();
-    assignPanel.scrollIntoView({behavior:"smooth", block:"nearest"});
-  }
-
-  function closePanel(){
-    selectedDate = null;
-    assignPanel.style.display = "none";
-    selectedWinners = new Set();
-    currentPhotoData = null;
-    setEntryType("training");
-    renderWeek();
-  }
-  document.getElementById("closePanelBtn").addEventListener("click", closePanel);
-
-  function renderPickGrid(){
-    pickGrid.innerHTML = "";
-    document.getElementById("noPlayersHint").style.display = data.players.length ? "none" : "block";
-    const counts = seasonCounts(activeSeason);
-    data.players.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
-      const chip = document.createElement("div");
-      chip.className = "player-chip" + (selectedWinners.has(p.id) ? " selected" : "");
-      chip.innerHTML = p.name + '<span class="cnt">' + (counts[p.id]||0) + ' kruisjes</span>';
-      chip.addEventListener("click", ()=>{
-        if(selectedWinners.has(p.id)) selectedWinners.delete(p.id);
-        else selectedWinners.add(p.id);
-        renderPickGrid();
-      });
-      pickGrid.appendChild(chip);
-    });
-  }
-
-  // ---------- Photo handling ----------
-  const photoInput = document.getElementById("photoInput");
-  const photoPreview = document.getElementById("photoPreview");
-  photoInput.addEventListener("change", ()=>{
-    const file = photoInput.files[0];
-    if(!file){ return; }
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = (e)=>{
-      img.onload = ()=>{
-        const maxW = 900;
-        const scale = Math.min(1, maxW / img.width);
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        currentPhotoData = canvas.toDataURL("image/jpeg", 0.7);
-        photoPreview.src = currentPhotoData;
-        photoPreview.style.display = "block";
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // ---------- Save (upsert) entry for selected day ----------
-  document.getElementById("saveBtn").addEventListener("click", async ()=>{
-    if(!selectedDate || !db) return;
-    const iso = selectedDate;
-    const isWedstrijd = currentEntryType === "wedstrijd";
-    const hasWinners = selectedWinners.size > 0;
-    const shouldSave = isWedstrijd || hasWinners;
-    try{
-      if(shouldSave){
-        await setDoc(doc(db,"entries",iso), {
-          type: currentEntryType,
-          season: seasonForDate(iso),
-          playerIds: isWedstrijd ? [] : Array.from(selectedWinners),
-          opponent: isWedstrijd ? opponentInput.value.trim() : null,
-          score: isWedstrijd ? scoreInput.value.trim() : null,
-          note: document.getElementById("note").value.trim(),
-          photo: currentPhotoData || null
-        });
-      } else {
-        await deleteDoc(doc(db,"entries",iso));
-      }
-      closePanel();
-      toast(isWedstrijd ? "Wedstrijd opgeslagen ⚽" : (hasWinners ? "Kruisje opgeslagen ✔️" : "Kruisje verwijderd"));
-    }catch(err){
-      toast("Opslaan mislukt: " + err.message);
-    }
-  });
-
-  // ---------- History ----------
-  function renderHistory(){
-    const entries = data.entries
-      .filter(e=>e.season===activeSeason)
-      .sort((a,b)=> b.date.localeCompare(a.date));
-    const container = document.getElementById("historyList");
-    container.innerHTML = "";
-    document.getElementById("historyEmpty").style.display = entries.length ? "none" : "block";
-    entries.forEach(e=>{
-      const div = document.createElement("div");
-      div.className = "history-item";
-      const dateFormatted = fromIso(e.date).toLocaleDateString("nl-NL", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
-      const winnersLine = e.type === "wedstrijd"
-        ? '<div class="winners">⚽ ' + escapeHtml(e.opponent ? ("vs " + e.opponent) : "Wedstrijd") + (e.score ? " — " + escapeHtml(e.score) : "") + '</div>'
-        : '<div class="winners">🎯 ' + escapeHtml(e.playerIds.map(playerName).join(", ")) + '</div>';
-      div.innerHTML =
-        '<div class="row1"><span class="date" data-jump="'+e.date+'">'+dateFormatted+'</span></div>' +
-        winnersLine +
-        (e.note ? '<div class="note">"'+escapeHtml(e.note)+'"</div>' : '') +
-        (e.photo ? '<img src="'+e.photo+'">' : '') +
-        '<div class="actions"><button class="btn-secondary btn-small" data-del="'+e.date+'">Verwijderen</button></div>';
-      container.appendChild(div);
-    });
-    container.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        if(!db) return;
-        if(confirm("Dit kruisje verwijderen?")){
-          try{
-            await deleteDoc(doc(db,"entries",btn.dataset.del));
-            toast("Verwijderd");
-          }catch(err){
-            toast("Verwijderen mislukt: " + err.message);
-          }
-        }
-      });
-    });
-    container.querySelectorAll("[data-jump]").forEach(el=>{
-      el.addEventListener("click", ()=>{
-        const iso = el.dataset.jump;
-        currentWeekStart = startOfWeek(fromIso(iso));
-        document.querySelector('nav.tabs button[data-tab="home"]').click();
-        renderWeek();
-        openDay(iso);
-      });
-    });
-  }
-
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  }
-
-  // ---------- Roster ----------
-  function renderRoster(){
-    const container = document.getElementById("rosterList");
-    container.innerHTML = "";
-    if(data.players.length === 0){
-      container.innerHTML = '<p class="empty">Nog geen spelers toegevoegd.</p>';
-    }
-    data.players.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
-      const row = document.createElement("div");
-      row.className = "roster-item";
-      row.innerHTML =
-        '<input type="text" value="'+escapeHtml(p.name)+'" data-id="'+p.id+'">' +
-        '<button class="btn-danger btn-small" data-remove="'+p.id+'">Verwijder</button>';
-      container.appendChild(row);
-    });
-    container.querySelectorAll("input[data-id]").forEach(inp=>{
-      inp.addEventListener("change", async ()=>{
-        if(!db || !inp.value.trim()) return;
-        try{
-          await setDoc(doc(db,"players",inp.dataset.id), { name: inp.value.trim() }, { merge:true });
-        }catch(err){
-          toast("Opslaan mislukt: " + err.message);
-        }
-      });
-    });
-    container.querySelectorAll("[data-remove]").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        if(!db) return;
-        const p = data.players.find(p=>p.id===btn.dataset.remove);
-        const usedInEntries = data.entries.some(e=>e.playerIds.includes(btn.dataset.remove));
-        const msg = usedInEntries
-          ? 'Deze speler heeft al kruisjes. Verwijderen laat de historie staan als "(verwijderde speler)". Doorgaan?'
-          : "Speler " + (p ? p.name : "") + " verwijderen?";
-        if(confirm(msg)){
-          try{
-            await deleteDoc(doc(db,"players",btn.dataset.remove));
-            selectedWinners.delete(btn.dataset.remove);
-            toast("Speler verwijderd");
-          }catch(err){
-            toast("Verwijderen mislukt: " + err.message);
-          }
-        }
-      });
-    });
-  }
-
-  document.getElementById("addPlayerBtn").addEventListener("click", addPlayer);
-  document.getElementById("newPlayerName").addEventListener("keydown", (e)=>{
-    if(e.key === "Enter") addPlayer();
-  });
-  async function addPlayer(){
-    if(!db) return;
-    const input = document.getElementById("newPlayerName");
-    const name = input.value.trim();
-    if(!name) return;
-    try{
-      await setDoc(doc(db,"players",uid()), { name });
-      input.value = "";
-      toast("Speler toegevoegd");
-    }catch(err){
-      toast("Toevoegen mislukt: " + err.message);
-    }
-  }
-
-  // ---------- Account ----------
-  document.getElementById("logoutBtn").addEventListener("click", ()=>{
-    if(auth) signOut(auth);
-  });
-
-  // ---------- Export / Import ----------
-  document.getElementById("exportBtn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "kruisjescup-backup-" + toIso(new Date()) + ".json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    toast("Back-up gedownload");
-  });
-
-  async function wipeCollection(name){
-    const snap = await getDocs(collection(db,name));
-    const docs = snap.docs;
-    for(let i=0;i<docs.length;i+=450){
-      const batch = writeBatch(db);
-      docs.slice(i,i+450).forEach(d=>batch.delete(d.ref));
-      await batch.commit();
-    }
-  }
-
-  document.getElementById("importInput").addEventListener("change", ()=>{
-    const file = document.getElementById("importInput").files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = async (e)=>{
-      try{
-        const parsed = JSON.parse(e.target.result);
-        if(!parsed || !Array.isArray(parsed.players) || !Array.isArray(parsed.entries)){
-          throw new Error("Ongeldig bestand");
-        }
-        if(!db){ throw new Error("Cloud niet ingesteld"); }
-        if(confirm("Dit vervangt alle huidige cloud-data. Doorgaan?")){
-          await wipeCollection("players");
-          await wipeCollection("entries");
-          for(let i=0;i<parsed.players.length;i+=450){
-            const batch = writeBatch(db);
-            parsed.players.slice(i,i+450).forEach(p=>{
-              batch.set(doc(db,"players", p.id || uid()), { name: p.name });
-            });
-            await batch.commit();
-          }
-          for(let i=0;i<parsed.entries.length;i+=450){
-            const batch = writeBatch(db);
-            parsed.entries.slice(i,i+450).forEach(en=>{
-              batch.set(doc(db,"entries", en.date), {
-                season: en.season || seasonForDate(en.date),
-                playerIds: en.playerIds || [],
-                note: en.note || "",
-                photo: en.photo || null
-              });
-            });
-            await batch.commit();
-          }
-          closePanel();
-          toast("Back-up geïmporteerd");
-        }
-      }catch(err){
-        alert("Kon bestand niet importeren: " + err.message);
-      }
-      document.getElementById("importInput").value = "";
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById("resetBtn").addEventListener("click", async ()=>{
-    if(!db) return;
-    if(confirm("Weet je zeker dat je ALLE spelers en kruisjes wilt wissen? Dit kan niet ongedaan gemaakt worden.")){
-      if(confirm("Echt zeker? Maak liever eerst een back-up (export).")){
-        try{
-          await wipeCollection("players");
-          await wipeCollection("entries");
-          closePanel();
-          toast("Alles gewist");
-        }catch(err){
-          toast("Wissen mislukt: " + err.message);
-        }
-      }
-    }
-  });
-
-  // ---------- Render triggers ----------
-  function renderAllPlayers(){
-    renderPickGrid();
-    renderStandings();
-    renderRoster();
-    renderWeek();
-  }
-  function renderAllEntries(){
-    renderSeasonSelect();
-    renderStandings();
-    renderWeek();
-    renderHistory();
-    renderPickGrid();
-  }
-
-  renderSeasonSelect();
-  renderStandings();
-  renderWeek();
-  renderHistory();
-  renderRoster();
-})();
-</script>
 </body>
 </html>
