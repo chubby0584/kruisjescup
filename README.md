@@ -55,15 +55,25 @@ Open `beheer.html` in de browser en log in met de toegangscode. Tabs onderin:
 Een seizoen loopt van augustus t/m juli en wordt automatisch bepaald op basis
 van de datum; oudere seizoenen blijven bewaard en zijn te bekijken via de
 seizoenkiezer bovenin. Bovenin zie je ook de sync-status
-(☁️ gesynchroniseerd / 📴 offline).
+(☁️ gesynchroniseerd / 📴 offline), en een link **"Bekijk teampagina"** die
+`o17-1.html` opent zoals ouders en spelers 'm zien.
 
 ## Gebruik (teampagina, `o17-1.html`)
 
 Spelers en ouders komen hier binnen via een uitnodigingslink uit het
 tabblad **Leden**. Ze maken eenmalig een account aan (naam, e-mail,
-wachtwoord) en blijven daarna ingelogd. De pagina toont de stand van het gekozen seizoen als podium (met
-een knop voor de hele lijst) en daaronder een tijdlijn van alle trainingen en
-wedstrijden, met winnaar(s), notitie en foto. Alleen om te bekijken.
+wachtwoord) en blijven daarna ingelogd. De pagina toont de stand van het
+gekozen seizoen als podium (met een knop voor de hele lijst) en daaronder
+een tijdlijn van alle trainingen en wedstrijden, met winnaar(s), notitie en
+foto.
+
+Onder elke training/wedstrijd staat een rij met zes vaste emoji's
+(👍 ❤️ 😂 😮 👏 🔥). Een lid kan er per bericht precies één plaatsen —
+nogmaals tikken haalt 'm weer weg, een andere kiezen vervangt de vorige.
+Er is bewust geen tekstveld: geen los rondslingerend commentaar om te
+modereren, alleen een korte, veilige manier om te laten weten dat iemand het
+gezien heeft. De trainer ziet en kan meedoen aan dezelfde reacties, verder
+is er geen apart moderatiescherm voor.
 
 Bovenin staat een tip om de pagina als app op het beginscherm te zetten, met
 een stap-voor-stap-uitleg voor iPhone en Android. Zie ook
@@ -180,6 +190,19 @@ service cloud.firestore {
     match /entries/{id} {
       allow read:  if isCoach() || isActiveMember();
       allow write: if isCoach();
+
+      // Emoji-reacties: iedereen die mag lezen mag ook reageren, maar
+      // alleen op de eigen reactie (uid = document-id) en alleen met een
+      // emoji uit de vaste set — geen vrije tekst.
+      match /reactions/{uid} {
+        allow read: if isCoach() || isActiveMember();
+        allow write: if request.auth != null
+                     && request.auth.uid == uid
+                     && (isCoach() || isActiveMember())
+                     && request.resource.data.keys().hasOnly(['emoji'])
+                     && request.resource.data.emoji in ['👍','❤️','😂','😮','👏','🔥'];
+        allow delete: if request.auth != null && request.auth.uid == uid;
+      }
     }
   }
 }

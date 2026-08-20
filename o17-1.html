@@ -289,6 +289,32 @@
     display:block;
     background:#eee;
   }
+  .reactions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    padding:10px 15px 13px;
+    border-top:1px solid var(--border);
+  }
+  .react-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:#f2f4f2;
+    border:1.5px solid transparent;
+    border-radius:999px;
+    padding:5px 10px;
+    font-size:1rem;
+    line-height:1;
+    color:var(--muted);
+  }
+  .react-btn .n{font-size:.78rem;font-weight:700;min-width:8px;}
+  .react-btn.mine{
+    background:var(--brand-tint);
+    border-color:var(--brand);
+    color:var(--brand);
+  }
+  .react-btn.zero .n{display:none;}
   .season-badge{
     display:inline-block;
     background:var(--brand-tint);
@@ -625,7 +651,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signOut,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail
@@ -673,6 +699,10 @@ import { firebaseConfig } from "./firebase-config.js";
   }
 
   let data = { players: [], entries: [] };
+  let db = null;
+  let currentUid = null;
+  const EMOJI_SET = ["👍","❤️","😂","😮","👏","🔥"];
+  let reactionUnsubs = [];
   let activeSeason = seasonForDate(
     (()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })()
   );
@@ -789,7 +819,46 @@ import { firebaseConfig } from "./firebase-config.js";
     renderFeed();
   });
 
+  // Emoji-only reacties per training/wedstrijd: elk lid mag er per bericht
+  // precies één plaatsen (nogmaals tikken verwijdert 'm), geen vrije tekst.
+  function watchReactions(entryId){
+    if(!db) return;
+    const el = document.getElementById("react-" + entryId);
+    if(!el) return;
+    const unsub = onSnapshot(collection(db, "entries", entryId, "reactions"), snap=>{
+      const counts = {};
+      let mine = null;
+      snap.forEach(d=>{
+        const emoji = d.data().emoji;
+        counts[emoji] = (counts[emoji] || 0) + 1;
+        if(d.id === currentUid) mine = emoji;
+      });
+      el.innerHTML = EMOJI_SET.map(emoji=>{
+        const n = counts[emoji] || 0;
+        const isMine = emoji === mine;
+        return '<button type="button" class="react-btn' + (isMine ? " mine" : "") + (n === 0 ? " zero" : "") +
+          '" data-entry="' + escapeHtml(entryId) + '" data-emoji="' + emoji + '">' +
+          emoji + '<span class="n">' + n + '</span></button>';
+      }).join("");
+    }, err=>{ console.warn("reacties laden mislukt", err); });
+    reactionUnsubs.push(unsub);
+  }
+
+  document.getElementById("feedList").addEventListener("click", e=>{
+    const btn = e.target.closest(".react-btn");
+    if(!btn || !db || !currentUid) return;
+    const entryId = btn.dataset.entry;
+    const emoji = btn.dataset.emoji;
+    const ref = doc(db, "entries", entryId, "reactions", currentUid);
+    const alreadyMine = btn.classList.contains("mine");
+    (alreadyMine ? deleteDoc(ref) : setDoc(ref, { emoji }))
+      .catch(()=>{ /* volgende snapshot herstelt de knop vanzelf als het mislukt is */ });
+  });
+
   function renderFeed(){
+    reactionUnsubs.forEach(u=>u());
+    reactionUnsubs = [];
+
     const entries = seasonEntries().sort((a,b)=> b.date.localeCompare(a.date));
     const container = document.getElementById("feedList");
     container.innerHTML = "";
@@ -830,9 +899,11 @@ import { firebaseConfig } from "./firebase-config.js";
           bodyHtml +
           (e.note ? '<div class="story">' + escapeHtml(e.note) + '</div>' : '') +
         '</div>' +
-        (e.photo ? '<img src="' + e.photo + '" loading="lazy" alt="">' : '');
+        (e.photo ? '<img src="' + e.photo + '" loading="lazy" alt="">' : '') +
+        '<div class="reactions" id="react-' + escapeHtml(e.date) + '"></div>';
 
       container.appendChild(div);
+      watchReactions(e.date);
     });
 
     feedMoreBtn.style.display = entries.length > feedVisibleCount ? "block" : "none";
@@ -957,7 +1028,7 @@ import { firebaseConfig } from "./firebase-config.js";
   const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
   if(configFilledIn){
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    db = getFirestore(app);
     const auth = getAuth(app);
     let subscribed = false;
 
@@ -1042,6 +1113,7 @@ import { firebaseConfig } from "./firebase-config.js";
         }
 
         gate.style.display = "none";
+        currentUid = user.uid;
         document.getElementById("whoami").textContent =
           "Ingelogd als " + ((member && member.name) || user.email || "");
         maybeShowBanner();
@@ -1057,6 +1129,9 @@ import { firebaseConfig } from "./firebase-config.js";
           });
         }
       } else {
+        currentUid = null;
+        reactionUnsubs.forEach(u=>u());
+        reactionUnsubs = [];
         gate.style.display = "flex";
         passInput.value = "";
         // Wie via een uitnodigingslink binnenkomt, wil zich aanmelden.
