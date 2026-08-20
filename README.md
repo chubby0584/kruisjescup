@@ -16,7 +16,7 @@ je nooit meer iets kwijt, ook niet als je telefoon stuk gaat of kwijtraakt.
 | URL | Bestand | Wat |
 |---|---|---|
 | `jeugdscrheden.nl` | `index.html` | Portaal: clublogo met een knop per team. Hier komen later meer teams bij. |
-| `jeugdscrheden.nl/o17-1.html` | `o17-1.html` | Publieke teampagina voor spelers en ouders: stand + tijdlijn van trainingen en wedstrijden met foto's. Geen login, niets aan te passen. |
+| `jeugdscrheden.nl/o17-1.html` | `o17-1.html` | Teampagina voor spelers en ouders: stand + tijdlijn van trainingen en wedstrijden met foto's. Achter een eigen login (zelf een account aanmaken); alleen om te bekijken. |
 | `jeugdscrheden.nl/beheer.html` | `beheer.html` | Beheerscherm voor de trainer, achter een toegangscode. |
 
 ### Een team toevoegen
@@ -46,6 +46,8 @@ Open `beheer.html` in de browser en log in met de toegangscode. Tabs onderin:
 - **Geschiedenis** — overzicht van alles wat is vastgelegd, te verwijderen
   bij een fout.
 - **Spelers** — spelerslijst beheren.
+- **Leden** — wie er een account heeft op de teampagina, met de mogelijkheid
+  om iemand te blokkeren.
 - **Meer** — uitloggen, extra handmatige back-up (JSON) exporteren/importeren
   en alles wissen.
 
@@ -56,10 +58,15 @@ seizoenkiezer bovenin. Bovenin zie je ook de sync-status
 
 ## Gebruik (teampagina, `o17-1.html`)
 
-Deel deze link met spelers/ouders (bijv. via de teamapp/WhatsApp). Toont de
-stand van het gekozen seizoen als podium (met een knop voor de hele lijst) en
-daaronder een tijdlijn van alle trainingen en wedstrijden, met winnaar(s),
-notitie en foto. Alleen om te bekijken, geen inlog nodig.
+Deel deze link met spelers/ouders (bijv. via de teamapp/WhatsApp). Ze maken
+eenmalig zelf een account aan (naam, e-mail, wachtwoord) en blijven daarna
+ingelogd. De pagina toont de stand van het gekozen seizoen als podium (met
+een knop voor de hele lijst) en daaronder een tijdlijn van alle trainingen en
+wedstrijden, met winnaar(s), notitie en foto. Alleen om te bekijken.
+
+Bovenin staat een tip om de pagina als app op het beginscherm te zetten, met
+een stap-voor-stap-uitleg voor iPhone en Android. Zie ook
+[Accounts voor ouders en spelers](#accounts-voor-ouders-en-spelers).
 
 ## Cloud-opslag + login instellen (eenmalig, ~15 minuten)
 
@@ -74,23 +81,8 @@ je er nooit meer naar om te kijken.
 3. Linkermenu **Build → Firestore Database** → **Database maken** → kies
    **Productiemodus** → kies een locatie dichtbij (bv. `eur3 (europe-west)`)
    → **Inschakelen**.
-4. Ga naar het tabblad **Regels** binnen Firestore en plak:
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read: if true;
-         allow write: if request.auth != null
-                       && request.auth.token.firebase.sign_in_provider == 'password';
-       }
-     }
-   }
-   ```
-   **Publiceren**. Dit betekent: **iedereen** mag de data lezen (nodig voor
-   het publieke dashboard, zonder dat daar een login voor nodig is), maar
-   **wijzigen kan alleen** met een echte wachtwoord-login — dus alleen jij,
-   via het beheerscherm met de toegangscode.
+4. Ga naar het tabblad **Regels** binnen Firestore en plak de regels uit
+   [Firestore-regels](#firestore-regels) hieronder → **Publiceren**.
 5. Linkermenu **Build → Authentication** → **Aan de slag** → tabblad
    **Sign-in method** → zet **E-mail/wachtwoord** aan (niet "Anoniem" — die
    mag je juist uit laten staan of weer uitzetten als hij nog aanstond).
@@ -106,8 +98,7 @@ je er nooit meer naar om te kijken.
    toegangscode als wachtwoord.
 
 Zodra dat is gedaan: open `beheer.html`, log in met de toegangscode, en
-bovenin verschijnt "☁️ gesynchroniseerd". De teampagina (`o17-1.html`)
-werkt daarna direct, zonder inloggen.
+bovenin verschijnt "☁️ gesynchroniseerd".
 
 De gratis laag van Firebase (Spark-plan) heeft ruim voldoende capaciteit voor
 één team dat een paar keer per week een kruisje registreert.
@@ -136,15 +127,86 @@ in de GitHub Pages-documentatie — GitHub kan ze in principe wijzigen.
 Voor op de telefoon: open `beheer.html` in Safari → deel-icoon → **Zet op
 beginscherm** voor een eigen app-icoon dat volledig scherm opent.
 
+## Firestore-regels
+
+Plak dit in Firestore → **Regels** → **Publiceren**. Zonder deze regels kan
+iedereen die een account aanmaakt ook kruisjes wijzigen of wissen.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isCoach() {
+      return request.auth != null
+             && request.auth.uid == '6mi8nevdUzeKHyfkxjDFreoPkEk2';
+    }
+
+    function isActiveMember() {
+      return request.auth != null
+             && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+             && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.blocked != true;
+    }
+
+    // Lidprofiel: je maakt bij registratie je eigen profiel aan. Alleen de
+    // trainer kan blokkeren, wijzigen of verwijderen — en alleen de trainer
+    // kan de hele ledenlijst opvragen.
+    match /members/{uid} {
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.blocked == false;
+      allow get:    if isCoach() || (request.auth != null && request.auth.uid == uid);
+      allow list:   if isCoach();
+      allow update, delete: if isCoach();
+    }
+
+    // Spelers en kruisjes: lezen mag elk ingelogd, niet-geblokkeerd lid.
+    // Schrijven kan alleen de trainer.
+    match /players/{id} {
+      allow read:  if isCoach() || isActiveMember();
+      allow write: if isCoach();
+    }
+    match /entries/{id} {
+      allow read:  if isCoach() || isActiveMember();
+      allow write: if isCoach();
+    }
+  }
+}
+```
+
+De UID in `isCoach()` is het account van de trainer
+(`coach@kruisjescup.app`). Maak je ooit een nieuw trainersaccount, pas dan
+zowel deze regel als `COACH_UID` in `o17-1.html` aan.
+
+## Accounts voor ouders en spelers
+
+De teampagina zit achter een login. Ouders/spelers maken zelf een account
+aan met naam, e-mailadres en wachtwoord; er is geen uitnodigingscode.
+
+**Wat dit wel en niet oplost.** Het houdt zoekmachines en willekeurige
+voorbijgangers buiten de deur — foto's van de spelers zijn niet meer publiek
+opvraagbaar. Het is géén echte toegangscontrole: iedereen die de link
+doorgestuurd krijgt, kan een account aanmaken. De bescherming zit in het
+meekijken achteraf.
+
+In het beheerscherm staat daarom het tabblad **Leden**: daar zie je van elk
+account de naam, het e-mailadres en de aanmelddatum, nieuwste bovenaan.
+Klopt iets niet, dan blokkeer je het account met één tik — die persoon ziet
+dan niets meer. Blokkeren is beter dan verwijderen: een verwijderd profiel
+kan opnieuw worden aangemaakt, een geblokkeerd profiel niet. Iemand kan zich
+uiteraard wel met een ander e-mailadres opnieuw aanmelden.
+
 ## Data & privacy
 
 Spelersnamen, data en foto's staan in jouw eigen Firebase-project (niet bij
 Anthropic/Claude of een derde partij). De Firebase-configuratiewaarden in
 `firebase-config.js` zijn niet geheim — die identificeren alleen je project;
 de beveiliging zit in de Firestore-regels hierboven en de wachtwoord-login.
-Let op: het publieke dashboard toont namen en trainingsfoto's van
-minderjarige spelers aan iedereen met de link — deel die link daarom alleen
-binnen het team (spelers/ouders), niet breder openbaar. Maak via het
+Let op: de teampagina toont namen en trainingsfoto's van minderjarige
+spelers. Die zijn nu niet meer publiek opvraagbaar — er is een account voor
+nodig — maar iedereen die de link krijgt kan zo'n account aanmaken. Deel de
+link dus alleen binnen het team, en controleer af en toe het tabblad
+**Leden** in het beheerscherm. Maak via het
 "Meer"-tabblad af en toe nog een handmatige JSON-export als extra back-up,
 bijvoorbeeld voor het geval je ooit naar een nieuw Firebase-project wilt
 overstappen.

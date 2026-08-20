@@ -381,6 +381,31 @@
     display:block;
   }
   .history-item .actions{margin-top:8px;display:flex;gap:8px;}
+  .member{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:11px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .member:last-child{border-bottom:none;}
+  .member .info{flex:1;min-width:0;}
+  .member .nm{font-weight:700;font-size:.95rem;word-break:break-word;}
+  .member .em{font-size:.8rem;color:var(--muted);word-break:break-all;margin-top:1px;}
+  .member .when{font-size:.72rem;color:var(--muted);margin-top:3px;}
+  .member.blocked .nm,.member.blocked .em{text-decoration:line-through;opacity:.6;}
+  .member .tag{
+    display:inline-block;
+    background:#fdeceb;
+    color:var(--danger);
+    border-radius:999px;
+    padding:1px 8px;
+    font-size:.68rem;
+    font-weight:700;
+    margin-left:6px;
+    text-decoration:none;
+    vertical-align:1px;
+  }
   .roster-item{
     display:flex;
     align-items:center;
@@ -601,6 +626,15 @@
   </section>
 
   <!-- INSTELLINGEN -->
+  <section id="tab-leden" class="tabpage">
+    <div class="card">
+      <h2>Wie kijken er mee?</h2>
+      <p class="hint">Iedereen met de link naar de teampagina kan zelf een account aanmaken. Hier zie je wie dat gedaan heeft. Vertrouw je iemand niet, blokkeer het account — die persoon kan dan niets meer zien.</p>
+      <div id="membersList"></div>
+      <p class="empty" id="membersEmpty" style="display:none;">Nog niemand aangemeld.</p>
+    </div>
+  </section>
+
   <section id="tab-instellingen" class="tabpage">
     <div class="card">
       <h2>Account</h2>
@@ -626,6 +660,7 @@
   <button data-tab="home" class="active"><span class="icon">🏠</span>Home</button>
   <button data-tab="geschiedenis"><span class="icon">📖</span>Geschiedenis</button>
   <button data-tab="spelers"><span class="icon">👥</span>Spelers</button>
+  <button data-tab="leden"><span class="icon">👀</span>Leden</button>
   <button data-tab="instellingen"><span class="icon">⚙️</span>Meer</button>
 </nav>
 
@@ -636,7 +671,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache,
-  collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, writeBatch
+  collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -667,7 +702,7 @@ import { firebaseConfig } from "./firebase-config.js";
   }
 
   // ---------- Firebase (cloud sync) ----------
-  let data = { players: [], entries: [] };
+  let data = { players: [], entries: [], members: [] };
   const syncRow = document.getElementById("syncRow");
 
   function setSyncStatus(text){
@@ -724,6 +759,11 @@ import { firebaseConfig } from "./firebase-config.js";
             updateSyncStatus(snap);
             renderAllEntries();
           }, err=>{ setSyncError("cloudfout", err); });
+
+          onSnapshot(collection(db,"members"), snap=>{
+            data.members = snap.docs.map(d=>({ uid:d.id, ...d.data() }));
+            renderMembers();
+          }, err=>{ console.warn("leden laden mislukt", err); });
         }
       } else {
         loginGate.style.display = "flex";
@@ -770,6 +810,7 @@ import { firebaseConfig } from "./firebase-config.js";
       document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
       if(btn.dataset.tab === "geschiedenis") renderHistory();
       if(btn.dataset.tab === "spelers") renderRoster();
+      if(btn.dataset.tab === "leden") renderMembers();
     });
   });
 
@@ -1120,6 +1161,53 @@ import { firebaseConfig } from "./firebase-config.js";
   }
 
   // ---------- Roster ----------
+  // ---------- Leden (ouders/spelers met een account) ----------
+  function renderMembers(){
+    const container = document.getElementById("membersList");
+    if(!container) return;
+    const rows = data.members.slice().sort((a,b)=>{
+      const ta = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+      const tb = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+      return tb - ta;
+    });
+    document.getElementById("membersEmpty").style.display = rows.length ? "none" : "block";
+    container.innerHTML = rows.map(m=>{
+      const when = m.createdAt && m.createdAt.seconds
+        ? new Date(m.createdAt.seconds*1000).toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"})
+        : "";
+      const blocked = m.blocked === true;
+      return '<div class="member' + (blocked ? " blocked" : "") + '">' +
+        '<div class="info">' +
+          '<div class="nm">' + escapeHtml(m.name || "(geen naam)") +
+            (blocked ? '<span class="tag">geblokkeerd</span>' : '') + '</div>' +
+          '<div class="em">' + escapeHtml(m.email || "") + '</div>' +
+          (when ? '<div class="when">aangemeld ' + when + '</div>' : '') +
+        '</div>' +
+        '<button class="' + (blocked ? "btn-secondary" : "btn-danger") + ' btn-small" data-block="' +
+          escapeHtml(m.uid) + '" data-to="' + (blocked ? "0" : "1") + '">' +
+          (blocked ? "Deblokkeren" : "Blokkeren") + '</button>' +
+      '</div>';
+    }).join("");
+
+    container.querySelectorAll("[data-block]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        if(!db) return;
+        const block = btn.dataset.to === "1";
+        const m = data.members.find(x=>x.uid === btn.dataset.block);
+        const naam = m ? (m.name || m.email) : "dit account";
+        if(!confirm(block
+          ? "“" + naam + "” blokkeren? Deze persoon kan de teampagina dan niet meer bekijken."
+          : "“" + naam + "” weer toegang geven?")) return;
+        try{
+          await updateDoc(doc(db,"members",btn.dataset.block), { blocked: block });
+          toast(block ? "Geblokkeerd" : "Weer toegang");
+        }catch(err){
+          toast("Mislukt: " + err.message);
+        }
+      });
+    });
+  }
+
   function renderRoster(){
     const container = document.getElementById("rosterList");
     container.innerHTML = "";
@@ -1292,6 +1380,7 @@ import { firebaseConfig } from "./firebase-config.js";
   renderWeek();
   renderHistory();
   renderRoster();
+  renderMembers();
 })();
 </script>
 </body>

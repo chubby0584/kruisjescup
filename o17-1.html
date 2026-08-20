@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>O17-1 · SC Rheden</title>
 <meta name="theme-color" content="#ba2017">
+<link rel="manifest" href="manifest-team.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="O17-1">
 <style>
   :root{
     --brand:#ba2017;
@@ -301,6 +306,209 @@
     color:var(--ink);
     letter-spacing:-.01em;
   }
+  /* ---------------- Inloggen ---------------- */
+  .gate{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:22px 18px;
+    overflow-y:auto;
+  }
+  .gate-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:26px 22px;
+    max-width:360px;
+    width:100%;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+  .gate-card .crest{display:block;height:70px;margin:0 auto 14px;}
+  .gate-card h1{
+    margin:0;
+    font-size:1.25rem;
+    text-align:center;
+    letter-spacing:-.02em;
+  }
+  .gate-card .lead{
+    margin:6px 0 20px;
+    font-size:.87rem;
+    color:var(--muted);
+    text-align:center;
+    line-height:1.45;
+  }
+  .gate label{
+    display:block;
+    font-size:.78rem;
+    font-weight:700;
+    color:var(--muted);
+    margin:12px 0 5px;
+  }
+  .gate input{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:1rem;
+    background:#fff;
+    color:var(--text);
+    font-family:inherit;
+  }
+  .btn-primary{
+    background:var(--brand);
+    color:#fff;
+    width:100%;
+    margin-top:18px;
+  }
+  .btn-primary:disabled{opacity:.55;cursor:not-allowed;}
+  .gate-msg{
+    margin-top:12px;
+    font-size:.83rem;
+    border-radius:10px;
+    padding:10px 12px;
+    line-height:1.4;
+  }
+  .gate-msg.err{background:#fdeceb;color:#9d2c21;}
+  .gate-msg.ok{background:#e9f4ea;color:#1b5e20;}
+  .gate-switch{
+    margin-top:18px;
+    text-align:center;
+    font-size:.85rem;
+    color:var(--muted);
+  }
+  .linkbtn{
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:var(--brand);
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .forgot{
+    display:block;
+    margin-top:14px;
+    text-align:center;
+    font-size:.8rem;
+  }
+
+  /* ---------------- App-uitleg ---------------- */
+  .install-banner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--brand-tint);
+    border:1px solid #f3cfcb;
+    border-radius:14px;
+    padding:11px 13px;
+    margin-bottom:14px;
+    font-size:.86rem;
+  }
+  .install-banner .txt{flex:1;color:#8e1811;font-weight:600;}
+  .install-banner button{
+    padding:7px 12px;
+    font-size:.8rem;
+    border-radius:8px;
+    background:var(--brand);
+    color:#fff;
+    flex:0 0 auto;
+  }
+  .install-banner .close{
+    background:none;
+    color:#a8524b;
+    font-size:1.1rem;
+    padding:2px 4px;
+  }
+  .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:300;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding:0;
+  }
+  .modal-card{
+    background:var(--card);
+    border-radius:18px 18px 0 0;
+    padding:22px 20px 28px;
+    width:100%;
+    max-width:520px;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .modal-card h3{
+    margin:0 0 4px;
+    font-size:1.15rem;
+    letter-spacing:-.01em;
+  }
+  .modal-card .lead{
+    margin:0 0 16px;
+    font-size:.86rem;
+    color:var(--muted);
+    line-height:1.45;
+  }
+  .steps{list-style:none;margin:0;padding:0;counter-reset:s;}
+  .steps li{
+    counter-increment:s;
+    position:relative;
+    padding:0 0 16px 40px;
+    font-size:.92rem;
+    line-height:1.45;
+  }
+  .steps li::before{
+    content:counter(s);
+    position:absolute;
+    left:0;
+    top:-1px;
+    width:27px;
+    height:27px;
+    border-radius:50%;
+    background:var(--brand);
+    color:#fff;
+    font-size:.82rem;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .steps li:last-child{padding-bottom:4px;}
+  .steps .key{
+    display:inline-block;
+    background:#eef0ee;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:1px 7px;
+    font-weight:700;
+    font-size:.86rem;
+    white-space:nowrap;
+  }
+  .os-tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .os-tabs button{
+    flex:1;
+    padding:9px 6px;
+    font-size:.86rem;
+    border-radius:9px;
+    background:#eceeec;
+    color:var(--text);
+  }
+  .os-tabs button.active{background:var(--brand);color:#fff;}
+  .account-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    font-size:.78rem;
+    color:var(--muted);
+    padding:14px 4px 0;
+    flex-wrap:wrap;
+  }
   footer{
     text-align:center;
     color:var(--muted);
@@ -310,6 +518,65 @@
 </style>
 </head>
 <body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <img src="icons/club-logo.png" alt="SC Rheden" class="crest">
+    <h1 id="gateTitle">Inloggen</h1>
+    <p class="lead" id="gateLead">Log in om de stand en de foto's van O17-1 te bekijken.</p>
+
+    <form id="gateForm">
+      <div id="nameRow" style="display:none;">
+        <label for="gateName">Je naam</label>
+        <input type="text" id="gateName" autocomplete="name" placeholder="bijv. Marieke de Vries (moeder van Jesse)">
+      </div>
+
+      <label for="gateEmail">E-mailadres</label>
+      <input type="email" id="gateEmail" autocomplete="email" required>
+
+      <label for="gatePass">Wachtwoord</label>
+      <input type="password" id="gatePass" autocomplete="current-password" required minlength="6">
+
+      <div class="gate-msg err" id="gateMsg" style="display:none;"></div>
+
+      <button type="submit" class="btn-primary" id="gateSubmit">Inloggen</button>
+    </form>
+
+    <button class="linkbtn forgot" id="forgotBtn">Wachtwoord vergeten?</button>
+
+    <p class="gate-switch" id="gateSwitch">
+      Nog geen account? <button class="linkbtn" id="switchBtn">Account aanmaken</button>
+    </p>
+  </div>
+</div>
+
+<div class="modal" id="installModal" style="display:none;">
+  <div class="modal-card">
+    <h3>📲 Zet O17-1 op je beginscherm</h3>
+    <p class="lead">Dan open je de stand en foto's met één tik, net als een echte app — zonder adresbalk.</p>
+
+    <div class="os-tabs">
+      <button data-os="ios">iPhone / iPad</button>
+      <button data-os="android">Android</button>
+    </div>
+
+    <ol class="steps" id="stepsIos">
+      <li>Open deze pagina in <b>Safari</b> (het werkt niet vanuit Chrome of een app zoals WhatsApp — tik dan eerst op <span class="key">Openen in Safari</span>).</li>
+      <li>Tik onderin op het deel-icoon: <span class="key">⬆️</span></li>
+      <li>Scroll naar beneden en kies <span class="key">Zet op beginscherm</span>.</li>
+      <li>Tik rechtsboven op <span class="key">Voeg toe</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.</li>
+    </ol>
+
+    <ol class="steps" id="stepsAndroid" style="display:none;">
+      <li>Open deze pagina in <b>Chrome</b>.</li>
+      <li>Tik rechtsboven op de drie puntjes: <span class="key">⋮</span></li>
+      <li>Kies <span class="key">Toevoegen aan startscherm</span> (of <span class="key">App installeren</span>).</li>
+      <li>Bevestig met <span class="key">Toevoegen</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.</li>
+    </ol>
+
+    <button class="btn-secondary" id="closeInstall" style="width:100%;margin-top:6px;">Sluiten</button>
+  </div>
+</div>
 
 <header>
   <div class="header-inner">
@@ -322,6 +589,12 @@
 </header>
 
 <main>
+
+  <div class="install-banner" id="installBanner" style="display:none;">
+    <span class="txt">Zet O17-1 als app op je beginscherm</span>
+    <button id="showInstall">Hoe?</button>
+    <button class="close" id="dismissInstall" aria-label="Sluiten">✕</button>
+  </div>
 
   <div class="card">
     <span class="season-badge" id="standSeasonBadge"></span>
@@ -337,13 +610,26 @@
   <p class="empty" id="feedEmpty" style="display:none;">Nog niets geregistreerd dit seizoen.</p>
   <button class="btn-secondary" id="feedMoreBtn" style="width:100%;display:none;">Meer laden</button>
 
+  <div class="account-row">
+    <span id="whoami"></span>
+    <span>
+      <button class="linkbtn" id="installLink">App op beginscherm</button>
+      &nbsp;·&nbsp;
+      <button class="linkbtn" id="logoutBtn">Uitloggen</button>
+    </span>
+  </div>
+
 </main>
 
-<footer>Kruisjescup JO17 · SC Rheden</footer>
+<footer>Kruisjescup · SC Rheden</footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, signOut,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 (function(){
@@ -558,18 +844,198 @@ import { firebaseConfig } from "./firebase-config.js";
     renderFeed();
   }
 
+  // ---------- App op beginscherm ----------
+  const installModal = document.getElementById("installModal");
+  const installBanner = document.getElementById("installBanner");
+  const BANNER_KEY = "o17-install-dismissed";
+
+  // Draait de pagina al als geïnstalleerde app? Dan is de uitleg overbodig.
+  function isStandalone(){
+    return window.navigator.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches;
+  }
+  function showOs(os){
+    document.getElementById("stepsIos").style.display = os === "ios" ? "block" : "none";
+    document.getElementById("stepsAndroid").style.display = os === "android" ? "block" : "none";
+    document.querySelectorAll(".os-tabs button").forEach(b=>{
+      b.classList.toggle("active", b.dataset.os === os);
+    });
+  }
+  const looksAndroid = /Android/i.test(navigator.userAgent);
+  showOs(looksAndroid ? "android" : "ios");
+  document.querySelectorAll(".os-tabs button").forEach(b=>{
+    b.addEventListener("click", ()=> showOs(b.dataset.os));
+  });
+
+  function openInstall(){ installModal.style.display = "flex"; }
+  function closeInstall(){ installModal.style.display = "none"; }
+  document.getElementById("showInstall").addEventListener("click", openInstall);
+  document.getElementById("installLink").addEventListener("click", openInstall);
+  document.getElementById("closeInstall").addEventListener("click", closeInstall);
+  installModal.addEventListener("click", e=>{ if(e.target === installModal) closeInstall(); });
+
+  document.getElementById("dismissInstall").addEventListener("click", ()=>{
+    installBanner.style.display = "none";
+    try{ localStorage.setItem(BANNER_KEY, "1"); }catch(e){}
+  });
+  function maybeShowBanner(){
+    let dismissed = false;
+    try{ dismissed = localStorage.getItem(BANNER_KEY) === "1"; }catch(e){}
+    installBanner.style.display = (!dismissed && !isStandalone()) ? "flex" : "none";
+  }
+
+  // ---------- Inloggen ----------
+  const gate = document.getElementById("gate");
+  const gateForm = document.getElementById("gateForm");
+  const gateMsg = document.getElementById("gateMsg");
+  const gateSubmit = document.getElementById("gateSubmit");
+  const emailInput = document.getElementById("gateEmail");
+  const passInput = document.getElementById("gatePass");
+  let mode = "login"; // of "signup"
+
+  function setMsg(text, kind){
+    gateMsg.textContent = text;
+    gateMsg.className = "gate-msg " + (kind || "err");
+    gateMsg.style.display = text ? "block" : "none";
+  }
+  function setMode(next){
+    mode = next;
+    const signup = mode === "signup";
+    document.getElementById("gateTitle").textContent = signup ? "Account aanmaken" : "Inloggen";
+    document.getElementById("gateLead").textContent = signup
+      ? "Maak een account aan om de stand en de foto's van O17-1 te volgen."
+      : "Log in om de stand en de foto's van O17-1 te bekijken.";
+    gateSubmit.textContent = signup ? "Account aanmaken" : "Inloggen";
+    passInput.autocomplete = signup ? "new-password" : "current-password";
+    document.getElementById("nameRow").style.display = signup ? "block" : "none";
+    document.getElementById("gateName").required = signup;
+    document.getElementById("gateSwitch").innerHTML = signup
+      ? 'Heb je al een account? <button class="linkbtn" id="switchBtn">Inloggen</button>'
+      : 'Nog geen account? <button class="linkbtn" id="switchBtn">Account aanmaken</button>';
+    document.getElementById("switchBtn").addEventListener("click", ()=>{
+      setMode(signup ? "login" : "signup");
+    });
+    document.getElementById("forgotBtn").style.display = signup ? "none" : "block";
+    setMsg("");
+  }
+  document.getElementById("switchBtn").addEventListener("click", ()=> setMode("signup"));
+
+  // Firebase-foutcodes omzetten naar begrijpelijke taal voor ouders.
+  function humanError(err){
+    switch(err && err.code){
+      case "auth/invalid-email":         return "Dat e-mailadres klopt niet.";
+      case "auth/missing-password":      return "Vul je wachtwoord in.";
+      case "auth/weak-password":         return "Kies een wachtwoord van minstens 6 tekens.";
+      case "auth/email-already-in-use":  return "Er bestaat al een account met dit e-mailadres. Log in of gebruik 'Wachtwoord vergeten'.";
+      case "auth/invalid-credential":
+      case "auth/invalid-login-credentials":
+      case "auth/wrong-password":
+      case "auth/user-not-found":        return "E-mailadres of wachtwoord klopt niet.";
+      case "auth/too-many-requests":     return "Te veel pogingen. Probeer het over een paar minuten opnieuw.";
+      case "auth/network-request-failed":return "Geen verbinding. Check je internet en probeer opnieuw.";
+      default: return "Er ging iets mis: " + ((err && err.message) || "onbekende fout");
+    }
+  }
+
+  // De trainer heeft geen lidprofiel maar mag de teampagina wel bekijken.
+  const COACH_UID = "6mi8nevdUzeKHyfkxjDFreoPkEk2";
+
   const configFilledIn = firebaseConfig.apiKey && firebaseConfig.apiKey !== "VUL_HIER_IN";
   if(configFilledIn){
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    onSnapshot(collection(db,"players"), snap=>{
-      data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-      renderAll();
+    const auth = getAuth(app);
+    let subscribed = false;
+
+    gateForm.addEventListener("submit", e=>{
+      e.preventDefault();
+      setMsg("");
+      const email = emailInput.value.trim();
+      const pass = passInput.value;
+      const naam = document.getElementById("gateName").value.trim();
+
+      if(mode === "signup" && naam.length < 2){
+        setMsg("Vul je naam in, zodat de trainer weet wie je bent.", "err");
+        return;
+      }
+      gateSubmit.disabled = true;
+
+      const action = mode === "signup"
+        ? createUserWithEmailAndPassword(auth, email, pass).then(cred=>
+            // Lidprofiel vastleggen zodat de trainer ziet wie er meekijkt.
+            setDoc(doc(db,"members",cred.user.uid), {
+              name: naam,
+              email: email,
+              createdAt: serverTimestamp(),
+              blocked: false
+            })
+          )
+        : signInWithEmailAndPassword(auth, email, pass);
+
+      action
+        .catch(err=> setMsg(humanError(err), "err"))
+        .finally(()=>{ gateSubmit.disabled = false; });
     });
-    onSnapshot(collection(db,"entries"), snap=>{
-      data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
-      renderAll();
+
+    document.getElementById("forgotBtn").addEventListener("click", ()=>{
+      const email = emailInput.value.trim();
+      if(!email){
+        setMsg("Vul eerst je e-mailadres in, dan sturen we een herstelmail.", "err");
+        emailInput.focus();
+        return;
+      }
+      sendPasswordResetEmail(auth, email)
+        .then(()=> setMsg("Gelukt! Check je mail voor een link om een nieuw wachtwoord te kiezen.", "ok"))
+        .catch(err=> setMsg(humanError(err), "err"));
     });
+
+    document.getElementById("logoutBtn").addEventListener("click", ()=> signOut(auth));
+
+    // Firebase onthoudt de sessie zelf, dus wie eenmaal inlogt blijft ingelogd.
+    onAuthStateChanged(auth, async user=>{
+      if(user){
+        // Toegang hangt aan het lidprofiel: is dat weg of geblokkeerd door de
+        // trainer, dan kom je er niet meer in (de Firestore-regels weigeren
+        // de data ook echt, dit is alleen de nette melding eromheen).
+        const isCoach = user.uid === COACH_UID;
+        let member = null;
+        try{
+          const snap = await getDoc(doc(db,"members",user.uid));
+          if(snap.exists()) member = snap.data();
+        }catch(err){ /* regels weigeren het: hieronder afgehandeld */ }
+
+        if(!isCoach && (!member || member.blocked === true)){
+          await signOut(auth);
+          gate.style.display = "flex";
+          setMode("login");
+          setMsg("Dit account heeft geen toegang (meer) tot de teampagina. Neem contact op met de trainer.", "err");
+          return;
+        }
+
+        gate.style.display = "none";
+        document.getElementById("whoami").textContent =
+          "Ingelogd als " + ((member && member.name) || user.email || "");
+        maybeShowBanner();
+        if(!subscribed){
+          subscribed = true;
+          onSnapshot(collection(db,"players"), snap=>{
+            data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+            renderAll();
+          });
+          onSnapshot(collection(db,"entries"), snap=>{
+            data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+            renderAll();
+          });
+        }
+      } else {
+        gate.style.display = "flex";
+        passInput.value = "";
+        setMode("login");
+      }
+    });
+  } else {
+    gate.style.display = "flex";
+    setMsg("De cloudinstellingen ontbreken — zie README.md", "err");
   }
 
   renderAll();
