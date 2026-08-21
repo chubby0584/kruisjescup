@@ -1007,7 +1007,6 @@ import { firebaseConfig } from "./firebase-config.js";
     const counts = seasonCounts();
     return data.players
       .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
-      .filter(r => r.count > 0)
       .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
   }
 
@@ -1026,8 +1025,10 @@ import { firebaseConfig } from "./firebase-config.js";
     const list = document.getElementById("standingsList");
     document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
 
-    // Podium: plaats 2 links, 1 midden, 3 rechts.
-    const top3 = rows.slice(0,3);
+    // Podium: alleen spelers die al minstens 1 kruisje hebben — plaats
+    // 2 links, 1 midden, 3 rechts. Iedereen met 0 kruisjes staat gewoon
+    // in de lijst eronder, niet op het podium.
+    const top3 = rows.filter(r=>r.count>0).slice(0,3);
     if(top3.length === 0){
       podium.style.display = "none";
     } else {
@@ -1048,11 +1049,11 @@ import { firebaseConfig } from "./firebase-config.js";
       }).join("");
     }
 
-    // Overige spelers onder het podium.
-    const rest = rows.slice(3);
+    // Overige spelers onder het podium (incl. iedereen met 0 kruisjes).
+    const rest = rows.filter(r=>!top3.includes(r));
     const visibleRest = standingsExpanded ? rest : rest.slice(0, STANDINGS_REST_N);
     list.innerHTML = visibleRest.map((r,i)=>
-      '<li><span class="rank">' + (i+4) + '</span>' +
+      '<li><span class="rank">' + (top3.length+i+1) + '</span>' +
       avatarHtml(r.name) +
       '<span class="name">' + escapeHtml(r.name) + '</span>' +
       '<span class="score">' + r.count + '</span></li>'

@@ -925,7 +925,6 @@ import { firebaseConfig } from "./firebase-config.js";
     const counts = seasonCounts(activeSeason);
     const rows = data.players
       .map(p => ({ id:p.id, name:p.name, count: counts[p.id]||0 }))
-      .filter(r => r.count > 0)
       .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
 
     const showAll = standingsExpanded || rows.length <= STANDINGS_TOP_N;
@@ -936,7 +935,7 @@ import { firebaseConfig } from "./firebase-config.js";
     document.getElementById("standingsEmpty").style.display = rows.length ? "none" : "block";
     visibleRows.forEach((r,i)=>{
       const li = document.createElement("li");
-      const medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
+      const medal = r.count === 0 ? (i+1) : (i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1));
       li.innerHTML = '<span class="rank">'+medal+'</span><span class="name">'+r.name+'</span><span class="score">'+r.count+'</span>';
       list.appendChild(li);
     });
