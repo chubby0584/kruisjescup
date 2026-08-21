@@ -443,6 +443,7 @@
     text-decoration:none;
     vertical-align:1px;
   }
+  .member .tag.role{background:var(--brand-tint);color:var(--brand);}
   .roster-item{
     display:flex;
     align-items:center;
@@ -1324,9 +1325,11 @@ import { firebaseConfig } from "./firebase-config.js";
         ? new Date(m.createdAt.seconds*1000).toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"})
         : "";
       const blocked = m.blocked === true;
+      const roleLabel = m.role === "speler" ? "Speler" : (m.role === "ouder" ? "Ouder" : "");
       return '<div class="member' + (blocked ? " blocked" : "") + '">' +
         '<div class="info">' +
           '<div class="nm">' + escapeHtml(m.name || "(geen naam)") +
+            (roleLabel ? '<span class="tag role">' + roleLabel + '</span>' : '') +
             (blocked ? '<span class="tag">geblokkeerd</span>' : '') + '</div>' +
           '<div class="em">' + escapeHtml(m.email || "") + '</div>' +
           (when ? '<div class="when">aangemeld ' + when + '</div>' : '') +

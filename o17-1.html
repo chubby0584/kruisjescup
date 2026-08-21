@@ -374,7 +374,7 @@
     color:var(--muted);
     margin:12px 0 5px;
   }
-  .gate input{
+  .gate input,.gate select{
     width:100%;
     padding:12px;
     border:1px solid var(--border);
@@ -384,6 +384,8 @@
     color:var(--text);
     font-family:inherit;
   }
+  .gate select{color:var(--muted);}
+  .gate select:valid{color:var(--text);}
   .btn-primary{
     background:var(--brand);
     color:#fff;
@@ -733,6 +735,13 @@
       <div id="nameRow" style="display:none;">
         <label for="gateName">Je naam</label>
         <input type="text" id="gateName" autocomplete="name" placeholder="Je voor- en achternaam">
+
+        <label for="gateRole">Ik ben</label>
+        <select id="gateRole">
+          <option value="" disabled selected>Kies…</option>
+          <option value="speler">Speler</option>
+          <option value="ouder">Ouder / verzorger</option>
+        </select>
       </div>
 
       <label for="gateEmail">E-mailadres</label>
@@ -1239,6 +1248,7 @@ import { firebaseConfig } from "./firebase-config.js";
     passInput.autocomplete = signup ? "new-password" : "current-password";
     document.getElementById("nameRow").style.display = signup ? "block" : "none";
     document.getElementById("gateName").required = signup;
+    document.getElementById("gateRole").required = signup;
     document.getElementById("gateSwitch").innerHTML = signup
       ? 'Heb je al een account? <button class="linkbtn" id="switchBtn">Inloggen</button>'
       : 'Nog geen account? <button class="linkbtn" id="switchBtn">Account aanmaken</button>';
@@ -1297,9 +1307,14 @@ import { firebaseConfig } from "./firebase-config.js";
       const email = emailInput.value.trim();
       const pass = passInput.value;
       const naam = document.getElementById("gateName").value.trim();
+      const rol = document.getElementById("gateRole").value;
 
       if(mode === "signup" && naam.length < 2){
         setMsg("Vul je naam in, zodat de trainer weet wie je bent.", "err");
+        return;
+      }
+      if(mode === "signup" && !rol){
+        setMsg("Kies of je speler of ouder/verzorger bent.", "err");
         return;
       }
       gateSubmit.disabled = true;
@@ -1309,6 +1324,7 @@ import { firebaseConfig } from "./firebase-config.js";
             // Lidprofiel vastleggen zodat de trainer ziet wie er meekijkt.
             setDoc(doc(db,"members",cred.user.uid), {
               name: naam,
+              role: rol,
               email: email,
               invite: inviteFromUrl,
               createdAt: serverTimestamp(),

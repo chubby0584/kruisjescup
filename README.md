@@ -174,6 +174,7 @@ service cloud.firestore {
       allow create: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.blocked == false
+                    && request.resource.data.role in ['speler','ouder']
                     && exists(/databases/$(database)/documents/invites/$(request.resource.data.invite))
                     && get(/databases/$(database)/documents/invites/$(request.resource.data.invite)).data.expiresAt > request.time;
       allow get:    if isCoach() || (request.auth != null && request.auth.uid == uid);
