@@ -515,6 +515,165 @@
     font-size:.86rem;
     white-space:nowrap;
   }
+  /* ---------------- Schematische UI-mockups (geen echte screenshots) ---------------- */
+  @keyframes tapPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(186,32,23,.45);}
+    50%{box-shadow:0 0 0 5px rgba(186,32,23,0);}
+  }
+  .mockup{
+    background:#eef0ee;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .mockup .caption{
+    font-size:.68rem;
+    color:var(--muted);
+    text-align:center;
+    margin-top:6px;
+    font-weight:600;
+  }
+  .tap{
+    position:relative;
+    border-radius:10px;
+    outline:2px solid var(--brand);
+    animation:tapPulse 1.8s ease-in-out infinite;
+  }
+  .tap::after{
+    content:"👆";
+    position:absolute;
+    right:-6px;
+    bottom:-14px;
+    font-size:14px;
+    transform:rotate(-15deg);
+  }
+  /* Safari-werkbalk */
+  .safari-bar{
+    background:#f7f7f8;
+    border:1px solid #dcdde0;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    padding:10px 6px;
+    color:#8a8d93;
+  }
+  .safari-bar svg{display:block;}
+  .safari-bar .tap{padding:5px 9px;color:var(--brand);}
+  /* Deelmenu-sheet */
+  .share-sheet{
+    background:#fff;
+    border:1px solid #dcdde0;
+    border-radius:14px;
+    padding:8px;
+  }
+  .share-sheet .handle{
+    width:34px;height:4px;border-radius:2px;
+    background:#d6d7db;margin:2px auto 8px;
+  }
+  .share-sheet .row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 8px;
+    border-radius:8px;
+    font-size:.82rem;
+    color:#3a3a3c;
+  }
+  .share-sheet .row.dim{color:#b6b7bb;}
+  .share-sheet .row .ic{
+    width:26px;height:26px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    background:#eceeee;flex:0 0 auto;
+  }
+  .share-sheet .row.tap{background:var(--brand-tint);font-weight:700;color:var(--brand);}
+  .share-sheet .row.tap .ic{background:transparent;}
+  /* iOS "toevoegen" scherm */
+  .add-screen{
+    background:#fff;
+    border:1px solid #dcdde0;
+    border-radius:14px;
+    padding:10px 12px;
+  }
+  .add-screen .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:.78rem;
+    margin-bottom:10px;
+  }
+  .add-screen .topbar .cancel{color:#8a8d93;}
+  .add-screen .topbar .add{color:var(--brand);font-weight:700;}
+  .add-screen .preview{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .add-screen .preview img{width:38px;height:38px;border-radius:9px;display:block;}
+  .add-screen .preview .nm{font-size:.85rem;font-weight:700;color:var(--text);}
+  .add-screen .preview .url{font-size:.68rem;color:var(--muted);}
+  /* Chrome adresbalk (Android) */
+  .chrome-bar{
+    background:#fff;
+    border:1px solid #dcdde0;
+    border-radius:24px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 8px 9px 14px;
+    color:#5f6368;
+  }
+  .chrome-bar .url{
+    flex:1;
+    font-size:.78rem;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .chrome-bar .dots{
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+  }
+  /* Android dropdownmenu */
+  .droid-menu{
+    background:#fff;
+    border:1px solid #dcdde0;
+    border-radius:10px;
+    padding:6px;
+  }
+  .droid-menu .row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border-radius:8px;
+    font-size:.82rem;
+    color:#3a3a3c;
+  }
+  .droid-menu .row.dim{color:#b6b7bb;}
+  .droid-menu .row.tap{background:var(--brand-tint);font-weight:700;color:var(--brand);}
+  /* Android installatiedialoog */
+  .droid-dialog{
+    background:#fff;
+    border:1px solid #dcdde0;
+    border-radius:14px;
+    padding:12px;
+    text-align:center;
+  }
+  .droid-dialog img{width:34px;height:34px;border-radius:8px;display:block;margin:0 auto 6px;}
+  .droid-dialog .nm{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:10px;}
+  .droid-dialog .btnrow{display:flex;gap:8px;justify-content:center;}
+  .droid-dialog .btnrow span{
+    font-size:.76rem;
+    padding:6px 12px;
+    border-radius:7px;
+    color:#5f6368;
+    font-weight:600;
+  }
+  .droid-dialog .btnrow span.tap{background:var(--brand);color:#fff;}
   .os-tabs{display:flex;gap:8px;margin-bottom:16px;}
   .os-tabs button{
     flex:1;
@@ -588,16 +747,82 @@
 
     <ol class="steps" id="stepsIos">
       <li>Open deze pagina in <b>Safari</b> (het werkt niet vanuit Chrome of een app zoals WhatsApp — tik dan eerst op <span class="key">Openen in Safari</span>).</li>
-      <li>Tik onderin op het deel-icoon: <span class="key">⬆️</span></li>
-      <li>Scroll naar beneden en kies <span class="key">Zet op beginscherm</span>.</li>
-      <li>Tik rechtsboven op <span class="key">Voeg toe</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.</li>
+      <li>
+        <div class="mockup">
+          <div class="safari-bar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            <span class="tap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          </div>
+          <div class="caption">Onderin Safari — het deel-icoon (vierkant met pijltje omhoog)</div>
+        </div>
+        Tik op dat deel-icoon.
+      </li>
+      <li>
+        <div class="mockup">
+          <div class="share-sheet">
+            <div class="handle"></div>
+            <div class="row dim"><span class="ic">📋</span>Kopieer</div>
+            <div class="row dim"><span class="ic">✉️</span>Stuur</div>
+            <div class="row tap"><span class="ic">➕</span>Zet op beginscherm</div>
+          </div>
+          <div class="caption">Scroll in het menu dat opent naar deze regel</div>
+        </div>
+        Kies <span class="key">Zet op beginscherm</span>.
+      </li>
+      <li>
+        <div class="mockup">
+          <div class="add-screen">
+            <div class="topbar"><span class="cancel">Annuleer</span><span class="add tap">Voeg toe</span></div>
+            <div class="preview">
+              <img src="icons/apple-touch-icon.png" alt="">
+              <div><div class="nm">O17-1</div><div class="url">jeugdscrheden.nl</div></div>
+            </div>
+          </div>
+          <div class="caption">Rechtsboven — bevestig het toevoegen</div>
+        </div>
+        Tik op <span class="key">Voeg toe</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.
+      </li>
     </ol>
 
     <ol class="steps" id="stepsAndroid" style="display:none;">
       <li>Open deze pagina in <b>Chrome</b>.</li>
-      <li>Tik rechtsboven op de drie puntjes: <span class="key">⋮</span></li>
-      <li>Kies <span class="key">Toevoegen aan startscherm</span> (of <span class="key">App installeren</span>).</li>
-      <li>Bevestig met <span class="key">Toevoegen</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.</li>
+      <li>
+        <div class="mockup">
+          <div class="chrome-bar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <span class="url">jeugdscrheden.nl</span>
+            <span class="dots tap"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>
+          </div>
+          <div class="caption">Rechtsboven in Chrome — de drie puntjes</div>
+        </div>
+        Tik rechtsboven op de drie puntjes.
+      </li>
+      <li>
+        <div class="mockup">
+          <div class="droid-menu">
+            <div class="row dim">↻ Vernieuwen</div>
+            <div class="row dim">⭐ Toevoegen aan bladwijzers</div>
+            <div class="row tap">⬇️ App installeren</div>
+          </div>
+          <div class="caption">In het menu dat opent</div>
+        </div>
+        Kies <span class="key">App installeren</span> (of <span class="key">Toevoegen aan startscherm</span>).
+      </li>
+      <li>
+        <div class="mockup">
+          <div class="droid-dialog">
+            <img src="icons/icon-192.png" alt="">
+            <div class="nm">O17-1 installeren?</div>
+            <div class="btnrow"><span>Annuleren</span><span class="tap">Installeren</span></div>
+          </div>
+          <div class="caption">Bevestig in het schermpje dat verschijnt</div>
+        </div>
+        Bevestig met <span class="key">Installeren</span>. Klaar — het SC Rheden-icoon staat nu op je scherm.
+      </li>
     </ol>
 
     <button class="btn-secondary" id="closeInstall" style="width:100%;margin-top:6px;">Sluiten</button>
