@@ -1332,6 +1332,7 @@ import { firebaseConfig } from "./firebase-config.js";
             (roleLabel ? '<span class="tag role">' + roleLabel + '</span>' : '') +
             (blocked ? '<span class="tag">geblokkeerd</span>' : '') + '</div>' +
           '<div class="em">' + escapeHtml(m.email || "") + '</div>' +
+          (m.role === "ouder" && m.child ? '<div class="when">ouder/verzorger van ' + escapeHtml(m.child) + '</div>' : '') +
           (when ? '<div class="when">aangemeld ' + when + '</div>' : '') +
         '</div>' +
         '<button class="' + (blocked ? "btn-secondary" : "btn-danger") + ' btn-small" data-block="' +

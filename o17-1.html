@@ -742,6 +742,11 @@
           <option value="speler">Speler</option>
           <option value="ouder">Ouder / verzorger</option>
         </select>
+
+        <div id="childRow" style="display:none;">
+          <label for="gateChild">Van welke speler ben je ouder/verzorger?</label>
+          <input type="text" id="gateChild" autocomplete="off" placeholder="Voor- en achternaam van je kind">
+        </div>
       </div>
 
       <label for="gateEmail">E-mailadres</label>
@@ -1249,6 +1254,7 @@ import { firebaseConfig } from "./firebase-config.js";
     document.getElementById("nameRow").style.display = signup ? "block" : "none";
     document.getElementById("gateName").required = signup;
     document.getElementById("gateRole").required = signup;
+    syncChildRow();
     document.getElementById("gateSwitch").innerHTML = signup
       ? 'Heb je al een account? <button class="linkbtn" id="switchBtn">Inloggen</button>'
       : 'Nog geen account? <button class="linkbtn" id="switchBtn">Account aanmaken</button>';
@@ -1268,6 +1274,15 @@ import { firebaseConfig } from "./firebase-config.js";
       gateForm.style.display = "block";
     }
   }
+
+  function syncChildRow(){
+    const isOuder = mode === "signup" && document.getElementById("gateRole").value === "ouder";
+    document.getElementById("childRow").style.display = isOuder ? "block" : "none";
+    document.getElementById("gateChild").required = isOuder;
+    if(!isOuder) document.getElementById("gateChild").value = "";
+  }
+  document.getElementById("gateRole").addEventListener("change", syncChildRow);
+
   // Registreren kan alleen via een geldige uitnodigingslink (?uitnodiging=code).
   const inviteFromUrl = new URLSearchParams(location.search).get("uitnodiging") || "";
   let inviteOk = false;
@@ -1308,6 +1323,7 @@ import { firebaseConfig } from "./firebase-config.js";
       const pass = passInput.value;
       const naam = document.getElementById("gateName").value.trim();
       const rol = document.getElementById("gateRole").value;
+      const kind = document.getElementById("gateChild").value.trim();
 
       if(mode === "signup" && naam.length < 2){
         setMsg("Vul je naam in, zodat de trainer weet wie je bent.", "err");
@@ -1315,6 +1331,10 @@ import { firebaseConfig } from "./firebase-config.js";
       }
       if(mode === "signup" && !rol){
         setMsg("Kies of je speler of ouder/verzorger bent.", "err");
+        return;
+      }
+      if(mode === "signup" && rol === "ouder" && kind.length < 2){
+        setMsg("Vul in van welke speler je ouder/verzorger bent.", "err");
         return;
       }
       gateSubmit.disabled = true;
@@ -1325,6 +1345,7 @@ import { firebaseConfig } from "./firebase-config.js";
             setDoc(doc(db,"members",cred.user.uid), {
               name: naam,
               role: rol,
+              child: rol === "ouder" ? kind : null,
               email: email,
               invite: inviteFromUrl,
               createdAt: serverTimestamp(),
