@@ -1224,8 +1224,11 @@ import { firebaseConfig } from "./firebase-config.js";
     return Array.from(bytes, b => alfabet[b % alfabet.length]).join("");
   }
   function inviteUrl(code){
-    const base = location.origin + location.pathname.replace(/beheer\.html$/, "");
-    return base + "o17-1.html?uitnodiging=" + code;
+    // Alles na de laatste "/" is de bestandsnaam — die knippen we eraf,
+    // ongeacht of de adresbalk toevallig "beheer.html", "beheer" (GitHub
+    // Pages serveert ook zonder extensie) of iets anders laat zien.
+    const dir = location.pathname.replace(/[^/]*$/, "");
+    return location.origin + dir + "o17-1.html?uitnodiging=" + code;
   }
 
   document.querySelectorAll("[data-invite-days]").forEach(btn=>{
