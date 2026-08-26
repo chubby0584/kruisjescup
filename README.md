@@ -49,14 +49,29 @@ Open `beheer.html` in de browser en log in met de toegangscode. Tabs onderin:
 - **Leden** — uitnodigingslinks maken (1 dag of 1 week) en intrekken, plus
   het overzicht van wie er een account heeft, met de mogelijkheid om iemand
   te blokkeren.
-- **Meer** — uitloggen, extra handmatige back-up (JSON) exporteren/importeren
-  en alles wissen.
+- **Meer** — een Hulp-blokje met antwoorden op de meest gestelde vragen
+  (nieuwe uitnodigingslink, wachtwoord vergeten, iemand blokkeren, back-up
+  maken, speler toevoegen/verwijderen), daaronder uitloggen, extra
+  handmatige back-up (JSON) exporteren/importeren en alles wissen.
+  Let op: een import vervangt alleen de spelerslijst en de
+  kruisjes/trainingen/wedstrijden — leden-accounts en uitnodigingslinks
+  blijven altijd gewoon staan.
 
 Een seizoen loopt van augustus t/m juli en wordt automatisch bepaald op basis
 van de datum; oudere seizoenen blijven bewaard en zijn te bekijken via de
 seizoenkiezer bovenin. Bovenin zie je ook de sync-status
 (☁️ gesynchroniseerd / 📴 offline), en een link **"Bekijk teampagina"** die
 `o17-1.html` opent zoals ouders en spelers 'm zien.
+
+Wachtwoord vergeten? Op het inlogscherm staat een link **"Wachtwoord
+vergeten?"** — die stuurt een herstelmail naar het e-mailadres van het
+trainersaccount (`COACH_EMAIL` in `beheer.html`, standaard
+`coach@kruisjescup.app`). **Belangrijk:** dat adres moet een echte inbox zijn
+die je kan lezen, anders komt de herstelmail nergens aan. Check dit nu vast
+via Firebase Console → Authentication → Users: staat daar een adres dat niet
+echt van jou is? Wijzig het daar naar je eigen e-mailadres en pas
+`COACH_EMAIL` in `beheer.html` op dezelfde manier aan, zodat je er nooit
+buitengesloten van kan raken.
 
 ## Gebruik (teampagina, `o17-1.html`)
 
@@ -65,7 +80,9 @@ tabblad **Leden**. Ze maken eenmalig een account aan (naam, e-mail,
 wachtwoord) en blijven daarna ingelogd. De pagina toont de stand van het
 gekozen seizoen als podium (met een knop voor de hele lijst) en daaronder
 een tijdlijn van alle trainingen en wedstrijden, met winnaar(s), notitie en
-foto.
+foto. Bovenin staat, net als bij `beheer.html`, een sync-statusregel
+(☁️ gesynchroniseerd / 📴 offline / ⚠️ foutmelding) — zo blijft een
+verbindingsprobleem nooit onzichtbaar.
 
 Onder elke training/wedstrijd staat een rij met zeven vaste emoji's
 (⚽ 👍 ❤️ 😂 😮 👏 🔥). Een lid kan er per bericht precies één plaatsen —
