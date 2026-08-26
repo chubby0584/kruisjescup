@@ -507,6 +507,17 @@
   }
   .toast.show{opacity:1;}
   .hint{font-size:.8rem;color:var(--muted);margin-top:4px;}
+  .faq{border-top:1px solid var(--border);padding:10px 0;}
+  .faq:first-of-type{border-top:none;padding-top:0;}
+  .faq summary{
+    font-weight:700;
+    cursor:pointer;
+    list-style:none;
+  }
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::before{content:"▸ ";color:var(--brand);}
+  .faq[open] summary::before{content:"▾ ";}
+  .faq p{margin:8px 0 0;font-size:.85rem;color:var(--text);line-height:1.5;}
   .login-gate{
     position:fixed;
     inset:0;
@@ -533,6 +544,23 @@
     color:var(--brand);
   }
   .login-card form{text-align:left;}
+  .login-error.ok{color:var(--green);}
+  .linkbtn{
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:var(--brand);
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .forgot{
+    display:block;
+    margin-top:14px;
+    text-align:center;
+    font-size:.8rem;
+  }
   .login-error{
     color:var(--danger);
     font-size:.85rem;
@@ -563,6 +591,7 @@
       <p class="login-error" id="loginError" style="display:none;"></p>
       <button type="submit" class="btn-primary" style="width:100%;margin-top:16px;">Inloggen</button>
     </form>
+    <button class="linkbtn forgot" id="forgotBtn">Wachtwoord vergeten?</button>
   </div>
 </div>
 
@@ -686,6 +715,29 @@
 
   <section id="tab-instellingen" class="tabpage">
     <div class="card">
+      <h2>Hulp</h2>
+      <details class="faq">
+        <summary>Hoe maak ik een nieuwe uitnodigingslink?</summary>
+        <p>Ga naar tabblad <strong>Leden</strong> → kies "Link voor 1 dag" of "Link voor 1 week" → tik op de nieuwe link om 'm te kopiëren en deel 'm in de teamgroep. Na de gekozen periode werkt de link vanzelf niet meer.</p>
+      </details>
+      <details class="faq">
+        <summary>Ik ben mijn toegangscode (wachtwoord) vergeten</summary>
+        <p>Log uit en tik op het inlogscherm op "Wachtwoord vergeten?". Je krijgt een mail op het adres dat als trainersaccount is ingesteld, met een link om een nieuwe toegangscode te kiezen.</p>
+      </details>
+      <details class="faq">
+        <summary>Hoe blokkeer ik iemand?</summary>
+        <p>Ga naar tabblad <strong>Leden</strong> → "Wie kijken er mee?" → zoek de naam op → tik op blokkeren. Die persoon kan de teampagina dan niet meer bekijken, maar blijft wel in de lijst staan zodat je het later weer terug kan draaien.</p>
+      </details>
+      <details class="faq">
+        <summary>Hoe maak ik een back-up?</summary>
+        <p>Hieronder bij "Back-up" op "Exporteer back-up (JSON)" tikken en het bestand ergens bewaren (bv. mail 'm naar jezelf). Dit is een extra kopie — je data staat sowieso al automatisch in de cloud.</p>
+      </details>
+      <details class="faq">
+        <summary>Een speler mist of staat er dubbel in</summary>
+        <p>Ga naar tabblad <strong>Spelers</strong> om de spelerslijst aan te passen. Nieuwe spelers voeg je onderaan toe; een naam die er niet meer bij hoort kun je daar ook weer weghalen.</p>
+      </details>
+    </div>
+    <div class="card">
       <h2>Account</h2>
       <button class="btn-secondary" id="logoutBtn" style="width:100%;">Uitloggen</button>
     </div>
@@ -695,7 +747,7 @@
       <button class="btn-secondary" id="exportBtn" style="width:100%;margin-top:12px;">⬇️ Exporteer back-up (JSON)</button>
       <label for="importInput" style="margin-top:16px;">Importeer back-up</label>
       <input type="file" id="importInput" accept="application/json">
-      <p class="hint">Let op: importeren vervangt alle huidige cloud-data.</p>
+      <p class="hint">Let op: importeren vervangt de spelerslijst en alle kruisjes/trainingen/wedstrijden. Leden-accounts en uitnodigingslinks blijven gewoon staan — daar heeft dit geen invloed op.</p>
     </div>
     <div class="card">
       <h2>Gevarenzone</h2>
@@ -717,7 +769,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache,
   collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, writeBatch
@@ -838,6 +890,20 @@ import { firebaseConfig } from "./firebase-config.js";
           loginError.style.display = "block";
         })
         .finally(()=>{ submitBtn.disabled = false; });
+    });
+
+    document.getElementById("forgotBtn").addEventListener("click", ()=>{
+      loginError.className = "login-error";
+      sendPasswordResetEmail(auth, COACH_EMAIL)
+        .then(()=>{
+          loginError.textContent = "Gelukt! Check " + COACH_EMAIL + " voor een link om een nieuw wachtwoord te kiezen.";
+          loginError.classList.add("ok");
+          loginError.style.display = "block";
+        })
+        .catch(err=>{
+          loginError.textContent = "Versturen mislukt: " + (err && err.message ? err.message : "onbekende fout");
+          loginError.style.display = "block";
+        });
     });
   }
 

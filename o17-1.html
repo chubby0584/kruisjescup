@@ -87,6 +87,11 @@
     font-weight:600;
   }
   header select option{color:#000;}
+  header .sync-row{
+    margin-top:6px;
+    font-size:.72rem;
+    opacity:.85;
+  }
 
   main{max-width:640px;margin:0 auto;padding:16px;}
 
@@ -883,6 +888,7 @@
       <span>Seizoen</span>
       <select id="seasonSelect"></select>
     </div>
+    <div class="sync-row" id="syncRow"></div>
   </div>
 </header>
 
@@ -973,6 +979,23 @@ import { firebaseConfig } from "./firebase-config.js";
   let data = { players: [], entries: [] };
   let db = null;
   let currentUid = null;
+  const syncRow = document.getElementById("syncRow");
+  function setSyncStatus(text){
+    if(syncRow) syncRow.textContent = text;
+  }
+  function setSyncError(prefix, err){
+    setSyncStatus("⚠️ " + prefix + ": " + (err && err.code ? err.code + " — " : "") + (err ? err.message : "onbekende fout") + " (tik om te verversen)");
+  }
+  function updateSyncStatus(snap){
+    setSyncStatus(snap.metadata.fromCache ? "📴 offline — wordt gesynchroniseerd zodra je weer online bent" : "☁️ gesynchroniseerd");
+  }
+  // Tik op de statusregel om de pagina met een schone cache te herladen.
+  if(syncRow){
+    syncRow.style.cursor = "pointer";
+    syncRow.addEventListener("click", ()=>{
+      location.href = location.pathname + location.search + (location.search ? "&" : "?") + "nocache=" + Date.now();
+    });
+  }
   const EMOJI_SET = ["⚽","👍","❤️","😂","😮","👏","🔥"];
   let reactionUnsubs = [];
   let activeSeason = seasonForDate(
@@ -1415,17 +1438,21 @@ import { firebaseConfig } from "./firebase-config.js";
         maybeShowBanner();
         if(!subscribed){
           subscribed = true;
+          setSyncStatus("verbinden met cloud…");
           onSnapshot(collection(db,"players"), snap=>{
             data.players = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+            updateSyncStatus(snap);
             renderAll();
-          });
+          }, err=>{ setSyncError("cloudfout", err); });
           onSnapshot(collection(db,"entries"), snap=>{
             data.entries = snap.docs.map(d=>({ date:d.id, ...d.data() }));
+            updateSyncStatus(snap);
             renderAll();
-          });
+          }, err=>{ setSyncError("cloudfout", err); });
         }
       } else {
         currentUid = null;
+        setSyncStatus("");
         reactionUnsubs.forEach(u=>u());
         reactionUnsubs = [];
         gate.style.display = "flex";
@@ -1437,6 +1464,7 @@ import { firebaseConfig } from "./firebase-config.js";
   } else {
     gate.style.display = "flex";
     setMsg("De cloudinstellingen ontbreken — zie README.md", "err");
+    setSyncStatus("⚠️ cloud niet ingesteld — zie README.md");
   }
 
   renderAll();
